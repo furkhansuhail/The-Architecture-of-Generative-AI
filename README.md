@@ -126,16 +126,16 @@ streamlit run app.py
 
 ## 🔗 Connection to Architecture of Intelligence
 
-| Deep Learning Project | Gen AI Project |
-|----------------------|----------------|
+| Deep Learning Project | Gen AI Project                  |
+|----------------------|----------------------------------|
 | Perceptron → MLP     | Tokenization → Language Modeling |
-| CNN, RNN             | Transformer LLM families |
-| Transformer          | Pretraining paradigms |
-| Full Fine-Tuning     | Instruction Fine-Tuning |
-| LoRA / QLoRA         | LoRA / QLoRA (extended) |
-| —                    | Alignment (RLHF, DPO) |
-| —                    | RAG, Agents, Multi-Agent |
-| —                    | Diffusion, Multimodal |
+| CNN, RNN             | Transformer LLM families         |
+| Transformer          | Pretraining paradigms            |
+| Full Fine-Tuning     | Instruction Fine-Tuning          |
+| LoRA / QLoRA         | LoRA / QLoRA (extended)          |
+| —                    | Alignment (RLHF, DPO)            |
+| —                    | RAG, Agents, Multi-Agent         |
+| —                    | Diffusion, Multimodal            |
 
 ---
 
