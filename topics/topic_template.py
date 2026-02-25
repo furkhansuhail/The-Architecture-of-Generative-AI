@@ -11,6 +11,7 @@ Naming convention:
 """
 
 # ── Display name (shown in sidebar and as page title) ──────────────────────
+TOPIC_NAME   = "Topic Name"
 DISPLAY_NAME = "Topic Name"
 ICON         = "📖"
 SUBTITLE     = "One-line description of what this topic covers"
