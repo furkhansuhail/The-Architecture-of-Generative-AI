@@ -1,0 +1,50 @@
+==========================================================
+  MODEL EVALUATION REPORT  –  Titanic Survival (RF)
+==========================================================
+
+  ── Random Forest ──
+  Accuracy  : 0.8156
+  Precision : 0.8750
+  Recall    : 0.6087
+  F1-Score  : 0.7179
+  ROC-AUC   : 0.8497
+
+  Classification Report:
+
+                  precision    recall  f1-score   support
+    
+    Not survived       0.79      0.95      0.86       110
+        Survived       0.88      0.61      0.72        69
+    
+        accuracy                           0.82       179
+       macro avg       0.83      0.78      0.79       179
+    weighted avg       0.83      0.82      0.81       179
+
+  ── Bagging (explicit) ──
+  Accuracy  : 0.8156
+  Precision : 0.7647
+  Recall    : 0.7536
+  F1-Score  : 0.7591
+  ROC-AUC   : 0.8339
+
+  Classification Report:
+
+                  precision    recall  f1-score   support
+    
+    Not survived       0.85      0.85      0.85       110
+        Survived       0.76      0.75      0.76        69
+    
+        accuracy                           0.82       179
+       macro avg       0.81      0.80      0.80       179
+    weighted avg       0.82      0.82      0.82       179
+
+  ── 5-Fold Cross Validation (RF) ──
+  Fold scores: [0.7972 0.7692 0.8662 0.831  0.8239]
+  Mean ± Std : 0.8175 ± 0.0327
+
+  ── Best Hyper-parameters (Grid Search) ──
+  max_depth           : 5
+  max_features        : sqrt
+  n_estimators        : 300
+
+==========================================================

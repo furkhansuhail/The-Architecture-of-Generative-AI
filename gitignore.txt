@@ -1,0 +1,40 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# API Keys
+Keys.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+
+# Environment / secrets
+Keys.env
+.env
+keys.env
+
+
+# Ignoring the Deleted_Code folder
+#**/Folder_name/
+**/Deleted_Code/
