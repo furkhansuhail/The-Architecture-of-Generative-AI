@@ -1,0 +1,62 @@
+1) Vector Databases
+
+2) AWS Tutorial Directory
+    |-web application using AWS
+
+3) Traditional frontend frameworks
+    Traditional frontend frameworks are JavaScript-based tools used to build the visual, interactive side of web applications — what the user sees and clicks on in their browser.
+
+    The major ones:
+    Component-Based Frameworks (most common today)
+
+    React — by Meta, the most widely used. Builds UIs from reusable components.
+    Vue.js — lighter and beginner-friendly, popular in Asia and Europe
+    Angular — by Google, full-featured and opinionated, common in enterprise
+
+    Meta-Frameworks (built on top of the above)
+
+    Next.js — React + server-side rendering, the modern standard for production React apps
+    Nuxt.js — same idea but for Vue
+    SvelteKit — built on Svelte, a newer leaner alternative
+
+    Older / Legacy (still used but less dominant)
+
+    jQuery — the original, still runs on millions of older sites
+    Backbone.js, Ember.js — largely replaced by the above
+
+
+    The key distinction from your stack:
+    Your ToolsPurposeStreamlitPython-based, UI for data/ML appsDjangoBackend web framework (handles servers, databases, APIs)React / Vue / AngularFrontend — pure browser UI, built in JavaScript
+
+
+4) Security and Governance:
+
+    TermPrimary DomainOAuth / OIDCWeb security & identity managementSecrets management / KMSCloud infrastructure & DevSecOpsRBAC / ABACSystem access control (cloud, enterprise software)SOC 2 / ISO 27001Corporate compliance & auditingGDPR / CCPAData privacy law
+
+5) Knowledge of GCP-based data tools (e.g., BigQuery).
+
+
+
+Cisco Job:
+            Software Engineer- AI-Python Automation
+
+                Minimum Qualifications
+                    Bachelor’s degree in Computer Science, Engineering, or a related field, with 4-5 years of experience in network test and automation environments
+                    Experience in testing QOS (PFC/ECN), RoCEv2 on switches and server NICs
+                    Experience in testing BGP/IGP routing protocol on IP or VxLAN fabrics
+                    Linux/Ubuntu system administration and performance tuning experience
+                    Experience in network automation using python and shell scripting
+                Preferred Qualifications
+                    Exposure to AI or GPU cluster interconnect testing with RoCEv2
+                    NIC tuning for optimal GPU performance
+                    Experience in generating traffic using Spirent/Ixia and relevant software api’s
+                    Familiarity with Cisco Nexus 9000 series switches
+                    Working knowledge of automation tools like Ansible and Terraform
+                    Experience with network telemetry and performance monitoring tools (SNMP, gNMI, Prometheus)
+                    Knowledge of open config and yang models is a plus
+                    Knowledge of VxLAN fabric is a plus
+                    Strong collaboration and documentation skills
+
+
+
+YAML

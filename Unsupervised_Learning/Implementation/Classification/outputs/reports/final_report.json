@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-03-01T04:09:26",
+  "dataset": {
+    "source": "synthetic",
+    "rows": 10000,
+    "features": 30,
+    "fraud_rate": "0.210%"
+  },
+  "preprocessing": {
+    "dropped_columns": [
+      "Time"
+    ],
+    "pca_enabled": true,
+    "pca_components": 10,
+    "n_components": 10,
+    "cumulative_variance": [
+      0.0424941548529417,
+      0.083770879753847,
+      0.12398220134853627,
+      0.16320542319905637,
+      0.20024554208334758,
+      0.23699779692619,
+      0.27325691944293173,
+      0.3091578927516354,
+      0.3446793402001066,
+      0.3797763587076972
+    ]
+  },
+  "dbscan_config": {
+    "eps": 1.8,
+    "min_samples": 10,
+    "metric": "euclidean"
+  },
+  "evaluation": {
+    "eps": 1.8,
+    "min_samples": 10,
+    "n_clusters": 1,
+    "n_noise": 3054,
+    "silhouette": null,
+    "precision": 0.0069,
+    "recall": 1.0,
+    "f1_score": 0.0137,
+    "roc_auc": 0.848,
+    "confusion_matrix": "[[6946 3033]\n [   0   21]]"
+  },
+  "confusion_matrix": [
+    [
+      6946,
+      3033
+    ],
+    [
+      0,
+      21
+    ]
+  ],
+  "top_tuning_results": []
+}

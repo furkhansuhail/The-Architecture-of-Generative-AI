@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Isolation Forest — Anomaly Detection Report</title>
+<style>
+  body  { font-family: "Segoe UI", Arial, sans-serif; margin: 40px;
+           background: #f8f9fa; color: #212529; }
+  h1   { color: #343a40; border-bottom: 3px solid #DD4444; padding-bottom: 8px;}
+  h2   { color: #495057; margin-top: 32px; }
+  table{ border-collapse: collapse; width: 100%; max-width: 600px; }
+  th,td{ padding: 8px 14px; border: 1px solid #dee2e6; text-align: left; }
+  th   { background: #343a40; color: #fff; }
+  tr:nth-child(even){ background:#e9ecef; }
+  .plot{ margin: 20px 0; background:#fff; padding:12px;
+          border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  .plot img{ max-width:100%; border-radius:4px; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:4px;
+            background:#DD4444; color:#fff; font-weight:bold; font-size:.85em;}
+</style>
+</head>
+<body>
+<h1>🔍 Isolation Forest — Anomaly Detection Report</h1>
+<p>Generated: <em>2026-03-01 04:46:55</em></p>
+
+<h2>⚙️ Best Hyper-parameters</h2>
+<table>
+<thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+<tbody><tr><td>contamination</td><td><strong>0.01</strong></td></tr>
+<tr><td>max_features</td><td><strong>0.8</strong></td></tr>
+<tr><td>max_samples</td><td><strong>0.5</strong></td></tr>
+<tr><td>n_estimators</td><td><strong>100</strong></td></tr>
+<tr><td>random_state</td><td><strong>42</strong></td></tr>
+<tr><td>n_jobs</td><td><strong>-1</strong></td></tr></tbody>
+</table>
+
+<h2>📊 Evaluation Metrics</h2>
+<table>
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody><tr><td>TP</td><td><strong>19</strong></td></tr>
+<tr><td>TN</td><td><strong>1960</strong></td></tr>
+<tr><td>FP</td><td><strong>0</strong></td></tr>
+<tr><td>FN</td><td><strong>21</strong></td></tr>
+<tr><td>Accuracy</td><td><strong>0.9895</strong></td></tr>
+<tr><td>Precision</td><td><strong>1.0</strong></td></tr>
+<tr><td>Recall</td><td><strong>0.475</strong></td></tr>
+<tr><td>F1</td><td><strong>0.6441</strong></td></tr>
+<tr><td>MCC</td><td><strong>0.6855</strong></td></tr>
+<tr><td>ROC_AUC</td><td><strong>1.0</strong></td></tr>
+<tr><td>PR_AUC</td><td><strong>1.0</strong></td></tr>
+<tr><td>Precision@50</td><td><strong>0.8</strong></td></tr>
+<tr><td>Precision@100</td><td><strong>0.4</strong></td></tr>
+<tr><td>Precision@200</td><td><strong>0.2</strong></td></tr>
+<tr><td>Precision@40</td><td><strong>1.0</strong></td></tr></tbody>
+</table>
+
+<h2>📈 Visualisations</h2>
+<div class="plot"><p><em>01_class_distribution.png</em></p><img src="../outputs/01_class_distribution.png" alt="01_class_distribution.png"/></div>
+<div class="plot"><p><em>02_amount_time.png</em></p><img src="../outputs/02_amount_time.png" alt="02_amount_time.png"/></div>
+<div class="plot"><p><em>03_feature_distributions.png</em></p><img src="../outputs/03_feature_distributions.png" alt="03_feature_distributions.png"/></div>
+<div class="plot"><p><em>04_correlation_heatmap.png</em></p><img src="../outputs/04_correlation_heatmap.png" alt="04_correlation_heatmap.png"/></div>
+<div class="plot"><p><em>05_anomaly_score_distribution.png</em></p><img src="../outputs/05_anomaly_score_distribution.png" alt="05_anomaly_score_distribution.png"/></div>
+<div class="plot"><p><em>06_roc_pr_curves.png</em></p><img src="../outputs/06_roc_pr_curves.png" alt="06_roc_pr_curves.png"/></div>
+<div class="plot"><p><em>07_confusion_matrix.png</em></p><img src="../outputs/07_confusion_matrix.png" alt="07_confusion_matrix.png"/></div>
+<div class="plot"><p><em>08_top_anomalies_scatter.png</em></p><img src="../outputs/08_top_anomalies_scatter.png" alt="08_top_anomalies_scatter.png"/></div>
+<div class="plot"><p><em>09_feature_importance_proxy.png</em></p><img src="../outputs/09_feature_importance_proxy.png" alt="09_feature_importance_proxy.png"/></div>
+<div class="plot"><p><em>10_tsne_projection.png</em></p><img src="../outputs/10_tsne_projection.png" alt="10_tsne_projection.png"/></div>
+
+<hr/>
+<p style="color:#999;font-size:.8em">
+  Isolation Forest Anomaly Detection · Powered by scikit-learn
+</p>
+</body>
+</html>

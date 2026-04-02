@@ -1,0 +1,155 @@
+04:46:20  INFO      ╔══════════════════════════════════════════════╗
+04:46:20  INFO      ║  Isolation Forest — Anomaly Detection        ║
+04:46:20  INFO      ╚══════════════════════════════════════════════╝
+04:46:20  INFO      Generating synthetic dataset (USE_SYNTHETIC=True or CSV missing) …
+04:46:20  INFO      Synthetic dataset  |  total=10000  fraud=200
+04:46:20  INFO      Dataset shape : (10000, 31)
+04:46:20  INFO      Class balance :
+Class
+0    0.98
+1    0.02
+04:46:20  INFO      ──── EDA ────────────────────────────────────────
+04:46:20  INFO      
+=======================================================
+04:46:20  INFO        Dataset Summary
+04:46:20  INFO        Total samples : 10000
+04:46:20  INFO        Normal        : 9800  (98.00 %)
+04:46:20  INFO        Anomaly/Fraud : 200  (2.00 %)
+04:46:20  INFO        Features      : 30
+04:46:20  INFO        Missing vals  : 0
+04:46:20  INFO      
+  Numeric stats:
+                 V1            V2            V3            V4            V5            V6            V7            V8            V9           V10           V11           V12           V13           V14           V15           V16           V17           V18           V19           V20           V21           V22           V23           V24           V25           V26           V27           V28           Time        Amount         Class
+count  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000  10000.000000   10000.000000  10000.000000  10000.000000
+mean       0.005238      0.016008     -0.001463      0.050621     -0.047052      0.049651     -0.047864      0.046061      0.002258      0.030029     -0.007987      0.027114     -0.053225      0.016504      0.057589     -0.032946      0.049909      0.029406     -0.054002     -0.006242      0.027638     -0.035759     -0.003254     -0.036216      0.050383     -0.000044      0.015099      0.039227   85470.652147    120.164446      0.020000
+std        1.025271      1.008645      1.008319      1.075808      1.069390      1.048615      1.055773      1.067033      1.022043      1.034353      1.009628      1.034393      1.047471      1.006385      1.090016      1.024146      1.058963      1.040359      1.060084      1.012483      1.030893      1.030575      1.011797      1.066141      1.048008      1.016079      1.010007      1.052538   49449.827924    450.030497      0.140007
+min       -3.741949     -3.575256     -4.054184     -3.492974     -7.254563     -3.906788     -7.072310     -4.102972     -4.507707     -3.810019     -3.749200     -3.597631     -5.127353     -3.773765     -3.883251     -4.097947     -3.671776     -3.823946     -5.918476     -4.055869     -3.525976     -5.421645     -3.888142     -5.711590     -3.680107     -4.815641     -3.613880     -4.389115      42.823857      0.089169      0.000000
+25%       -0.678760     -0.648790     -0.685968     -0.658602     -0.690754     -0.652379     -0.729377     -0.676380     -0.658996     -0.667758     -0.682071     -0.663090     -0.729880     -0.665731     -0.652072     -0.717491     -0.657990     -0.665399     -0.709959     -0.697298     -0.662882     -0.721045     -0.682994     -0.715885     -0.643257     -0.674355     -0.659848     -0.665522   43095.179015     12.251913      0.000000
+50%       -0.004906      0.009001      0.001926      0.023913     -0.020442      0.030983     -0.036945      0.020225     -0.009683      0.021078     -0.019994      0.030973     -0.038961      0.024143      0.022101     -0.031764      0.023119      0.027503     -0.034231     -0.014957      0.012104     -0.019877     -0.017832     -0.001218      0.040453     -0.005649      0.012542      0.020682   84159.172471     34.678779      0.000000
+75%        0.696556      0.690843      0.682115      0.709987      0.653124      0.737265      0.660672      0.699774      0.673578      0.705054      0.671254      0.708421      0.657272      0.704365      0.712799      0.655838      0.712927      0.711976      0.656595      0.688533      0.690153      0.652147      0.665957      0.664744      0.722387      0.686293      0.681299      0.718079  128182.921025     97.708341      0.000000
+max        3.948726      4.673164      4.159904      5.876143      3.992558      5.812988      3.895949      7.116092      3.618313      4.993276      4.183663      5.224694      4.506746      5.241189      6.217506      4.028347      6.152950      6.266551      3.778811      3.845864      5.766544      5.007235      4.041902      3.798210      5.071850      4.326002      4.911258      6.423630  172762.289423  21627.667536      1.000000
+04:46:20  INFO      =======================================================
+
+04:46:20  INFO        Saved → 01_class_distribution.png
+04:46:21  INFO        Saved → 02_amount_time.png
+04:46:23  INFO        Saved → 03_feature_distributions.png
+04:46:23  INFO        Saved → 04_correlation_heatmap.png
+04:46:23  INFO      EDA plots saved to I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\outputs
+04:46:23  INFO      ──── Pre-processing ──────────────────────────────
+04:46:23  INFO      Scaler saved → I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\models\scaler.pkl
+04:46:23  INFO      Train size : 8000  |  Test size : 2000
+04:46:23  INFO      Features   : 30  →  ['V1', 'V2', 'V3', 'V4', 'V5'] … 
+04:46:23  INFO      ──── Model Training ─────────────────────────────
+04:46:23  INFO      Starting hyper-parameter grid search …
+04:46:23  INFO        Grid size : 54 combinations
+04:46:23  INFO      IsolationForest trained in 0.25 s
+04:46:23  INFO        [1/54] ★ new best ROC-AUC=1.0000 | {'contamination': 0.01, 'max_features': 0.8, 'max_samples': 0.5, 'n_estimators': 100}
+04:46:24  INFO      IsolationForest trained in 0.35 s
+04:46:24  INFO      IsolationForest trained in 0.57 s
+04:46:25  INFO      IsolationForest trained in 0.27 s
+04:46:25  INFO      IsolationForest trained in 0.37 s
+04:46:26  INFO      IsolationForest trained in 0.66 s
+04:46:26  INFO      IsolationForest trained in 0.32 s
+04:46:27  INFO      IsolationForest trained in 0.50 s
+04:46:27  INFO      IsolationForest trained in 0.52 s
+04:46:28  INFO      IsolationForest trained in 0.30 s
+04:46:28  INFO      IsolationForest trained in 0.53 s
+04:46:29  INFO      IsolationForest trained in 0.60 s
+04:46:29  INFO      IsolationForest trained in 0.27 s
+04:46:30  INFO      IsolationForest trained in 0.48 s
+04:46:30  INFO      IsolationForest trained in 0.58 s
+04:46:30  INFO      IsolationForest trained in 0.27 s
+04:46:31  INFO      IsolationForest trained in 0.38 s
+04:46:32  INFO      IsolationForest trained in 0.67 s
+04:46:32  INFO      IsolationForest trained in 0.29 s
+04:46:32  INFO      IsolationForest trained in 0.49 s
+04:46:33  INFO      IsolationForest trained in 0.61 s
+04:46:33  INFO      IsolationForest trained in 0.23 s
+04:46:34  INFO      IsolationForest trained in 0.51 s
+04:46:35  INFO      IsolationForest trained in 0.65 s
+04:46:35  INFO      IsolationForest trained in 0.25 s
+04:46:35  INFO      IsolationForest trained in 0.58 s
+04:46:36  INFO      IsolationForest trained in 0.73 s
+04:46:37  INFO      IsolationForest trained in 0.31 s
+04:46:37  INFO      IsolationForest trained in 0.41 s
+04:46:38  INFO      IsolationForest trained in 0.69 s
+04:46:38  INFO      IsolationForest trained in 0.20 s
+04:46:38  INFO      IsolationForest trained in 0.37 s
+04:46:39  INFO      IsolationForest trained in 0.55 s
+04:46:39  INFO      IsolationForest trained in 0.19 s
+04:46:40  INFO      IsolationForest trained in 0.37 s
+04:46:40  INFO      IsolationForest trained in 0.47 s
+04:46:40  INFO      IsolationForest trained in 0.24 s
+04:46:41  INFO      IsolationForest trained in 0.42 s
+04:46:41  INFO      IsolationForest trained in 0.56 s
+04:46:42  INFO      IsolationForest trained in 0.33 s
+04:46:42  INFO      IsolationForest trained in 0.44 s
+04:46:43  INFO      IsolationForest trained in 0.57 s
+04:46:43  INFO      IsolationForest trained in 0.25 s
+04:46:44  INFO      IsolationForest trained in 0.43 s
+04:46:44  INFO      IsolationForest trained in 0.63 s
+04:46:45  INFO      IsolationForest trained in 0.30 s
+04:46:45  INFO      IsolationForest trained in 0.38 s
+04:46:46  INFO      IsolationForest trained in 0.57 s
+04:46:46  INFO      IsolationForest trained in 0.27 s
+04:46:46  INFO      IsolationForest trained in 0.50 s
+04:46:47  INFO      IsolationForest trained in 0.64 s
+04:46:47  INFO      IsolationForest trained in 0.26 s
+04:46:48  INFO      IsolationForest trained in 0.42 s
+04:46:48  INFO      IsolationForest trained in 0.56 s
+04:46:49  INFO      Best params : {'contamination': 0.01, 'max_features': 0.8, 'max_samples': 0.5, 'n_estimators': 100, 'random_state': 42, 'n_jobs': -1}
+04:46:49  INFO      Best val ROC-AUC : 1.0000
+04:46:49  INFO      Test ROC-AUC             : 1.0000
+04:46:49  INFO      Test Avg Precision (AP)  : 1.0000
+04:46:49  INFO      Model saved → I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\models\isolation_forest.pkl
+04:46:49  INFO      ──── Evaluation ─────────────────────────────────
+04:46:49  INFO      
+──────────────────────────────────────────────────
+04:46:49  INFO        Isolation Forest — Evaluation Report
+04:46:49  INFO      ──────────────────────────────────────────────────
+04:46:49  INFO        Confusion Matrix  (actual \ predicted)
+04:46:49  INFO                    Normal   Anomaly
+04:46:49  INFO        Normal      1960       0
+04:46:49  INFO        Anomaly       21      19
+04:46:49  INFO      ──────────────────────────────────────────────────
+04:46:49  INFO        Accuracy           : 0.9895
+04:46:49  INFO        Precision          : 1.0000
+04:46:49  INFO        Recall             : 0.4750
+04:46:49  INFO        F1                 : 0.6441
+04:46:49  INFO        MCC                : 0.6855
+04:46:49  INFO        ROC_AUC            : 1.0000
+04:46:49  INFO        PR_AUC             : 1.0000
+04:46:49  INFO        Precision@50       : 0.8000
+04:46:49  INFO        Precision@100      : 0.4000
+04:46:49  INFO        Precision@200      : 0.2000
+04:46:49  INFO        Precision@40       : 1.0000
+04:46:49  INFO      ──────────────────────────────────────────────────
+04:46:49  INFO      
+  Classification Report (sklearn):
+              precision    recall  f1-score   support
+
+      Normal       0.99      1.00      0.99      1960
+     Anomaly       1.00      0.47      0.64        40
+
+    accuracy                           0.99      2000
+   macro avg       0.99      0.74      0.82      2000
+weighted avg       0.99      0.99      0.99      2000
+
+04:46:49  INFO      ──── Visualising Results ────────────────────────
+04:46:49  INFO        Saved → 05_anomaly_score_distribution.png
+04:46:49  INFO        Saved → 06_roc_pr_curves.png
+04:46:49  INFO        Saved → 07_confusion_matrix.png
+04:46:50  INFO        Saved → 08_top_anomalies_scatter.png
+04:46:50  INFO        Computing feature importance proxy …
+04:46:50  INFO        Saved → 09_feature_importance_proxy.png
+04:46:50  INFO        Running t-SNE on 2000 samples …
+04:46:55  INFO        Saved → 10_tsne_projection.png
+04:46:55  INFO      All result plots saved to I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\outputs
+04:46:55  INFO      JSON report → I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\reports\summary.json
+04:46:55  INFO      HTML report → I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\reports\report.html
+04:46:55  INFO      ════════════════════════════════════════════════════
+04:46:55  INFO        Pipeline complete in 35.0 s
+04:46:55  INFO        HTML report : I:\The_Intelligence_Stack\Implementation\Unsupervised Model\IsolatingForestr_Anomaly_detection\reports\report.html
+04:46:55  INFO        Plots       : outputs/
+04:46:55  INFO        Model       : models/isolation_forest.pkl
+04:46:55  INFO      ════════════════════════════════════════════════════
