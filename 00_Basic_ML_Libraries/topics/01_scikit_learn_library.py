@@ -36,6 +36,44 @@ evaluating performance, tuning hyperparameters, saving models, and chaining
 everything into reproducible pipelines.
 
 
+What You're Expected to Know ? 
+
+You should be able to take a dataset, clean it, choose an appropriate model, train it, tune it, 
+evaluate it rigorously, and explain the results
+
+1. Supervised Learning (the core)
+    Building predictive models from labeled data:
+    
+    Classification → Logistic Regression, Random Forest, SVM, KNN, Gradient Boosting
+    Regression → Linear Regression, Ridge, Lasso, ElasticNet
+    
+2. Unsupervised Learning
+    Finding patterns without labels:
+    
+    Clustering → K-Means, DBSCAN, Hierarchical
+    Dimensionality Reduction → PCA, t-SNE
+
+3. The ML Pipeline (very important in jobs)
+
+    train_test_split() — splitting data for training vs evaluation
+    Pipeline() — chaining preprocessing + model into one clean object
+    GridSearchCV / RandomizedSearchCV — hyperparameter tuning
+    cross_val_score() — proper model validation
+
+4. Preprocessing
+
+    StandardScaler, MinMaxScaler — feature scaling
+    LabelEncoder, OneHotEncoder — handling categorical data
+    SimpleImputer — handling missing values
+
+5. Model Evaluation
+
+    accuracy_score, f1_score, confusion_matrix, roc_auc_score
+    Knowing which metric to use and why
+    
+Bottom line: If scikit-learn is in a job description, they want someone who can run a full ML workflow end-to-end, 
+not just calculate a mean or draw a plot.
+
 ### Why Scikit-Learn?
 
 There are two core reasons Scikit-Learn dominates practical ML work:
@@ -61,32 +99,32 @@ or imputation yourself — Scikit-Learn provides battle-tested versions.
 
 Every Scikit-Learn project follows roughly the same sequence of steps:
 
-    ┌────────────────────────────────────────────────────────────────────┐
-    │   THE SKLEARN WORKFLOW                                             │
-    │                                                                    │
-    │  0. Get the data → load CSV or built-in dataset                    │
-    │                                                                    │
-    │  1. Prepare the data:                                              │
-    │     • Split into features X and labels y                           │
-    │     • Fill or remove missing values (imputation)                   │
-    │     • Encode categorical columns as numbers                        │
-    │     • Split into train and test sets                               │
-    │                                                                    │
-    │  2. Choose a model (estimator) for your problem type:              │
-    │     • Regression   → predict a number                              │
-    │     • Classification → predict a category                          │
-    │     • Clustering   → find groups with no labels                    │
-    │                                                                    │
-    │  3. Fit the model: estimator.fit(X_train, y_train)                 │
-    │                                                                    │
-    │  4. Evaluate: estimator.score() / cross_val_score() / metrics      │
-    │                                                                    │
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │   THE SKLEARN WORKFLOW                                              │
+    │                                                                     │
+    │  0. Get the data → load CSV or built-in dataset                     │
+    │                                                                     │
+    │  1. Prepare the data:                                               │
+    │     • Split into features X and labels y                            │
+    │     • Fill or remove missing values (imputation)                    │
+    │     • Encode categorical columns as numbers                         │ 
+    │     • Split into train and test sets                                │ 
+    │                                                                     │
+    │  2. Choose a model (estimator) for your problem type:               │
+    │     • Regression   → predict a number                               │
+    │     • Classification → predict a category                           │
+    │     • Clustering   → find groups with no labels                     │
+    │                                                                     │
+    │  3. Fit the model: estimator.fit(X_train, y_train)                  │
+    │                                                                     │
+    │  4. Evaluate: estimator.score() / cross_val_score() / metrics       │
+    │                                                                     │
     │  5. Improve: hyperparameter tuning (RandomizedSearchCV/GridSearchCV)│
-    │                                                                    │
-    │  6. Save: pickle or joblib                                         │
-    │                                                                    │
-    │  7. Deploy: wrap in a Pipeline for reproducibility                 │
-    └────────────────────────────────────────────────────────────────────┘
+    │                                                                     │
+    │  6. Save: pickle or joblib                                          │
+    │                                                                     │
+    │  7. Deploy: wrap in a Pipeline for reproducibility                  │
+    └─────────────────────────────────────────────────────────────────────┘
 
 
 ### Problem Types

@@ -17,7 +17,7 @@ seaborn
 
 # pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
-torch
-torchvision
+# torch
+# torchvision
 
 pyro-ppl

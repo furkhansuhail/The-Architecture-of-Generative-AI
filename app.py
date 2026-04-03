@@ -78,8 +78,8 @@ st.markdown("""
 # ── Paradigm registry ──────────────────────────────────────────────────────────
 PARADIGMS ={
 
-    "00_Basic_ML_Libraries"         :                        "00_Basic_ML_Libraries",
-    "01_Automation"                 :                                   "Automation",
+    "00_Automation"                 :                                   "Automation",
+    "01_Basic_ML_Libraries"         :                        "00_Basic_ML_Libraries",
     "02_Core Math"                  :                   "01_ML_Foundation_Math_Core",
     "03_Probability_&_Information"  :   "02_ML_Foundation_Probability_&_Information",
     "04_Data"                       :                        "03_ML_Foundation_Data",

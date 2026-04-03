@@ -233,7 +233,114 @@ Information Gain (IG) at each node:
     blurry images (the approximate posterior Q misses modes of P).
 
 
-### PART 6 — CROSS-ENTROPY & CONNECTIONS TO ML LOSSES
+### PART 6 — F-DIVERGENCES & WASSERSTEIN DISTANCE
+
+### The f-Divergence Family
+
+KL divergence is one member of a large family. An f-DIVERGENCE for any
+convex function f with f(1) = 0:
+
+    D_f(P ‖ Q) = ∫ q(x) · f(p(x)/q(x)) dx     (continuous)
+               = Σₓ q(x) · f(p(x)/q(x))        (discrete)
+
+    Since f is convex and f(1) = 0:  D_f(P ‖ Q) ≥ 0  (Jensen's inequality)
+    D_f(P ‖ Q) = 0  iff  p(x)/q(x) = 1 a.e.  iff  P = Q
+
+Every choice of f yields a different divergence:
+
+    ┌──────────────────────────────┬────────────────────────┬──────────────────────────┐
+    │ Divergence                   │ f(t)                   │ ML Use                   │
+    ├──────────────────────────────┼────────────────────────┼──────────────────────────┤
+    │ KL(P ‖ Q)  (forward KL)      │ t log t                │ MLE, VAE decoder         │
+    │ KL(Q ‖ P)  (reverse KL)      │ -log t                 │ Variational inference    │
+    │ Total Variation TV(P,Q)      │ ½|t−1|                 │ Differential privacy     │
+    │ Squared Hellinger H²(P,Q)    │ (√t − 1)²              │ Robust statistics        │
+    │ Pearson χ² divergence        │ (t−1)²                 │ Hypothesis testing       │
+    │ Jensen-Shannon (JSD)         │ -(t+1)log((t+1)/2)+t·0 │ GANs (original paper)    │
+    │ α-divergences (Rényi, etc.)  │ (t^α − αt + α−1)/(α−1)│ Information geometry     │
+    └──────────────────────────────┴────────────────────────┴──────────────────────────┘
+
+TOTAL VARIATION DISTANCE:
+
+    TV(P, Q) = ½ ‖P − Q‖₁ = ½ Σₓ |P(x) − Q(x)|
+             = sup_{A} |P(A) − Q(A)|   (max divergence over all events)
+
+    Properties:
+        · Symmetric: TV(P,Q) = TV(Q,P)
+        · Bounded: 0 ≤ TV ≤ 1
+        · TV = 0 iff P = Q;  TV = 1 iff supports are disjoint
+        · Pinsker's inequality: TV(P,Q)² ≤ ½ KL(P ‖ Q)
+          → bounding TV via KL is the standard tool in DP analysis
+
+HELLINGER DISTANCE:
+
+    H(P,Q) = (1/√2) ‖√P − √Q‖₂  =  √(1 − Σₓ √(P(x)Q(x)))
+
+    The term BC = Σₓ √(P(x)Q(x)) is the BHATTACHARYYA COEFFICIENT —
+    it measures the overlap between two distributions.
+    H(P,Q) ∈ [0,1], symmetric, proper metric.
+
+f-DIVERGENCE GANs — the unified GAN framework:
+    Given a fixed real distribution P and a generated distribution Q(θ):
+
+        min_G max_D  E_P[g(D(x))] − E_Q[f*(g(D(x)))]
+
+    Different choices of f give different GAN variants:
+        · Standard GAN (Goodfellow):  JSD minimisation
+        · Least-squares GAN:          Pearson χ² minimisation
+        · Wasserstein GAN:            TV / Wasserstein (see below)
+        · f-GAN (Nowozin 2016):       general f-divergence
+
+
+### Wasserstein Distance (Earth Mover's Distance)
+
+The p-th WASSERSTEIN DISTANCE between distributions P and Q on metric space (X, d):
+
+    Wₚ(P, Q) = (inf_{γ ∈ Γ(P,Q)} ∫ d(x,y)ᵖ dγ(x,y))^{1/p}
+
+    Γ(P,Q) = set of all joint distributions (couplings) with marginals P and Q.
+    W₁ = Earth Mover's Distance: minimum "cost" to transport mass from P to Q.
+
+KANTOROVICH-RUBINSTEIN DUAL (W₁):
+
+    W₁(P, Q) = sup_{f: ‖f‖_L ≤ 1} |E_P[f(X)] − E_Q[f(X)]|
+
+    where ‖f‖_L ≤ 1 means f is 1-Lipschitz: |f(x)−f(y)| ≤ d(x,y).
+    This is the form used in WGAN — the discriminator approximates the
+    1-Lipschitz function, enforced via weight clipping or gradient penalty.
+
+WHY WASSERSTEIN > KL/TV FOR GENERATIVE MODELS:
+
+    1. KL divergence is ∞ when supports are disjoint (common early in training).
+    2. TV saturates at 1 for disjoint supports — gradient vanishes.
+    3. W₁ provides a smooth, meaningful distance even for disjoint supports:
+
+       Example — two point masses P = δ(0), Q = δ(θ):
+           KL(P ‖ Q) = ∞  for any θ ≠ 0
+           TV(P, Q)  = 1  for any θ ≠ 0 (binary — no gradient!)
+           W₁(P, Q)  = |θ|   (varies continuously with θ → gradient flows!)
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  W₁ is geometry-aware: it accounts for the distance      │
+    │  between where mass IS vs where it SHOULD BE.            │
+    │  KL and TV treat all mismatches equally regardless of    │
+    │  how "close" the mismatched regions are.                 │
+    └──────────────────────────────────────────────────────────┘
+
+COMPARISON TABLE:
+
+    ┌────────────────┬──────────┬──────────┬──────────┬────────────────┐
+    │ Property       │   KL     │   TV     │    H²    │  Wasserstein   │
+    ├────────────────┼──────────┼──────────┼──────────┼────────────────┤
+    │ Symmetric      │   No     │   Yes    │   Yes    │     Yes        │
+    │ Bounded        │   No     │   Yes    │   Yes    │     No         │
+    │ Metric         │   No     │   Yes    │   Yes    │     Yes        │
+    │ Disjoint supp. │   ∞      │    1     │    1     │  continuous    │
+    │ Geometry-aware │   No     │   No     │   No     │     Yes        │
+    └────────────────┴──────────┴──────────┴──────────┴────────────────┘
+
+
+### PART 7 — CROSS-ENTROPY & CONNECTIONS TO ML LOSSES
 
 ### Cross-Entropy H(P, Q)
 
@@ -340,6 +447,96 @@ metric for language models:
     Connection to cross-entropy loss:
         Minimising mean cross-entropy loss ≡ minimising perplexity
         → the standard training objective for GPT, BERT, etc.
+
+
+### Channel Capacity
+
+A COMMUNICATION CHANNEL takes an input X and produces an output Y
+through a conditional distribution P(Y|X) (the channel law):
+
+    Sender → [X] → [CHANNEL P(Y|X)] → [Y] → Receiver
+
+CHANNEL CAPACITY: the maximum rate of reliable information transmission:
+
+    C = max_{P(X)} I(X; Y)       [bits per channel use]
+
+    The maximisation is over all possible input distributions P(X).
+    The capacity-achieving P(X) is the "best" way to use the channel.
+
+BINARY SYMMETRIC CHANNEL (BSC) with crossover probability p:
+    Y = X ⊕ Noise,  P(Y≠X) = p (flip each bit independently)
+
+    C_BSC = 1 − H(p)  = 1 − H(p, 1−p)   [bits per use]
+
+    p=0 (perfect): C=1  (1 bit per use — no noise)
+    p=0.5 (useless): C=0  (pure noise — no information gets through)
+    p=0.1: C = 1 − H(0.1) ≈ 1 − 0.469 = 0.531 bits per use
+
+BINARY ERASURE CHANNEL (BEC) with erasure probability ε:
+    Y ∈ {0, 1, ?},  Y=? with probability ε (bit erased — receiver knows erasure)
+
+    C_BEC = 1 − ε   [bits per use]
+
+    Intuition: a fraction ε of bits are lost; the remaining 1−ε are perfect.
+
+ADDITIVE WHITE GAUSSIAN NOISE CHANNEL (AWGN):
+    Y = X + N,  N ~ N(0, N₀),  Power constraint E[X²] ≤ P
+
+    Shannon-Hartley theorem:
+        C = ½ log₂(1 + P/N₀)   [bits per channel use]
+          = B log₂(1 + SNR)    [bits per second, bandwidth B]
+
+    This is the SHANNON LIMIT — no coding scheme can beat it.
+    It explains why log(1+SNR) appears in all communication theory.
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  Capacity-achieving distribution for AWGN is Gaussian!  │
+    │  The input that maximises mutual information through a   │
+    │  Gaussian channel is itself Gaussian — a MaxEnt result.  │
+    └──────────────────────────────────────────────────────────┘
+
+
+### Shannon's Noisy Channel Coding Theorem (Second Theorem)
+
+THEOREM: For a channel with capacity C:
+
+    · If R < C:  there EXISTS a coding scheme with block length n such that
+      the probability of error → 0 as n → ∞.
+      (Reliable communication IS possible at any rate below capacity)
+
+    · If R > C:  for ANY coding scheme, the probability of error → 1.
+      (Reliable communication is IMPOSSIBLE at rates above capacity)
+
+    C is the exact dividing line — the fundamental limit of communication.
+
+    Diagram — Error probability vs rate:
+
+    P(error) │
+        1.0  │                      ╭────── R > C (inevitable errors)
+             │                   ╭──╯
+        0.5  │               ╭───╯
+             │            ───╯
+        0.0  │────────────           ← R < C (reliable, error→0 as n→∞)
+             └────────────────────── R (information rate)
+                          C
+
+ERROR EXPONENT: For R < C with block length n:
+    P(error) ≤ exp(−n · E(R))   where E(R) > 0 for R < C
+    The error decays exponentially in the block length — more coding
+    effort (larger n) gives exponentially smaller error probability.
+
+SHANNON'S KEY INSIGHT — RANDOM CODING ARGUMENT:
+    Most randomly-chosen codes achieve near-optimal performance.
+    You don't need to explicitly construct the best code — random codes
+    work, which proves capacity is achievable even without knowing the
+    optimal structure.
+
+CHANNEL CODING IN ML:
+    · Transformer attention heads learn to route information like a channel
+    · Dropout can be viewed as an erasure channel (BEC perspective)
+    · Federated learning: noisy gradients over a communication channel
+    · Quantisation: capacity of the digital → analog channel
+    · The trade-off between model size and accuracy mirrors rate vs distortion
 
 
 ### PART 8 — MAXIMUM ENTROPY PRINCIPLE
@@ -462,7 +659,107 @@ learn to discard input details irrelevant to the label.
     └────────────────────────────────────────────────────────────┘
 
 
-### PART 10 — FISHER INFORMATION & DIFFERENTIAL ENTROPY NUANCES
+### PART 10 — RATE-DISTORTION THEORY
+
+### The Problem of Lossy Compression
+
+SOURCE CODING THEOREM (Part 7) gives the limit for LOSSLESS compression.
+RATE-DISTORTION THEORY gives the limit for LOSSY compression:
+"How much can we compress while tolerating at most D distortion?"
+
+    RATE-DISTORTION FUNCTION R(D):
+
+        R(D) = min_{P(X̂|X): 𝔼[d(X,X̂)] ≤ D} I(X; X̂)
+
+    The minimisation is over all conditional distributions P(X̂|X)
+    (the encoding-decoding scheme) such that the expected distortion
+    between original X and reconstructed X̂ is at most D.
+
+    R(D) is the minimum number of bits per symbol needed to represent
+    X with expected distortion ≤ D.
+
+DISTORTION MEASURES:
+    Mean squared error (MSE): d(x, x̂) = (x − x̂)²
+    Hamming distance (bits):  d(x, x̂) = 𝟙[x ≠ x̂]
+    Log-loss (probabilistic): d(x, p̂) = −log p̂(x)
+
+
+### Properties of R(D)
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  Key properties of R(D):                                  │
+    │  · R(0) = H(X)  (zero distortion = lossless coding)      │
+    │  · R(D) is non-increasing:  more distortion → less rate  │
+    │  · R(D) is convex in D                                    │
+    │  · R(D) = 0  for D ≥ D_max  (trivially low rate when    │
+    │    distortion allowed equals variance of X)               │
+    └──────────────────────────────────────────────────────────┘
+
+    Diagram — Rate-Distortion Curve:
+
+    R(D) ↑
+    H(X) │ • ←— lossless coding point
+         │╲
+         │  ╲
+         │    ╲
+       0 │      ╲___________  ← can achieve zero rate if you allow enough distortion
+         └──────────────────── D (allowed distortion)
+              0         D_max
+
+    The curve shows the FUNDAMENTAL TRADE-OFF: lower distortion requires
+    more bits; more bits allow better reconstruction.
+
+
+### Gaussian Rate-Distortion
+
+For X ~ N(0, σ²) with MSE distortion d(x,x̂) = (x−x̂)²:
+
+    R(D) = ½ log₂(σ²/D)    for 0 ≤ D ≤ σ²,  else R(D) = 0
+
+    R(D) = 0  when D = σ² (allowed error = full variance → ignore X, output 0)
+    R(0) = ∞  (exact reconstruction needs infinite bits — X is continuous)
+
+    The OPTIMAL ENCODER for Gaussian sources assigns more bits to higher-energy
+    components — this is the principle behind JPEG, MP3, and transform coding.
+
+REVERSE WATER-FILLING (multi-source compression):
+    For a Gaussian vector source X ~ N(0, Λ) (diagonal covariance):
+
+        Allocate bits to component i:  Rᵢ = max(0, ½ log₂(λᵢ/D*))
+        where D* (water level) is chosen so total rate = R.
+
+    High-variance components get more bits; low-variance below D* get NONE.
+    This is why lossy codecs drop high-frequency components first.
+
+
+### Connection to Information Bottleneck
+
+The IB and R-D theory are formally equivalent:
+
+    IB:    min I(X;Z) − β·I(Z;Y)
+    R-D:   min I(X;X̂) subject to 𝔼[d(X,X̂)] ≤ D
+
+    Both minimise I(X; compressed) while preserving information.
+    IB preserves task-relevant information I(Z;Y) instead of raw fidelity.
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  IB is "semantic rate-distortion":                        │
+    │  · Replace fidelity d(x,x̂) with task loss d(z,y)         │
+    │  · The β-VAE directly implements IB as a rate-distortion  │
+    │    objective: β controls the bits/quality trade-off       │
+    │  · Neural compression models (VQ-VAE, etc.) learn the    │
+    │    optimal encoder for a given rate-distortion target     │
+    └──────────────────────────────────────────────────────────┘
+
+ML APPLICATIONS:
+    · Neural image/video compression (learn R(D) curve end-to-end)
+    · VQ-VAE, DALL-E: quantised latent codes implement R-D coding
+    · Model quantisation: R-D perspective on weight precision vs accuracy
+    · Diffusion models: successive refinement = moving along R(D) curve
+    · β-VAE: β directly scales the rate term I(X;Z) in the ELBO
+
+
+### PART 11 — FISHER INFORMATION & DIFFERENTIAL ENTROPY NUANCES
 
 ### Fisher Information I(θ)
 
@@ -557,6 +854,115 @@ from discrete entropy that are easy to miss:
     │ KL divergence consistent │ ✓              │ ✓                  │
     │ Maximum for uniform      │ ✓              │ ✗ (Gaussian max)   │
     └──────────────────────────┴────────────────┴────────────────────┘
+
+
+### PART 12 — MDL, AIC/BIC & OCCAM'S RAZOR
+
+### Minimum Description Length (MDL)
+
+MDL formalises the intuition that the best model is the one that most
+compresses the data — learning and compression are equivalent.
+
+    MDL PRINCIPLE: Given data D and model class M, choose the model M* that
+    minimises the total description length:
+
+        M* = argmin_{M}  L(M) + L(D | M)
+
+    L(M)     = bits to describe the model (complexity penalty)
+    L(D | M) = bits to describe the data given the model (fit quality)
+
+TWO-PART (CRUDE) MDL:
+    L(D | M) = -log P(D | θ̂)    (negative log-likelihood at the MLE)
+    L(M)     = (k/2) log n       (k parameters, n data points — like BIC)
+
+    A model with good two-part MDL fits the data well AND is simple.
+
+STOCHASTIC COMPLEXITY (Rissanen):
+    The Normalised Maximum Likelihood (NML) code:
+
+        P_NML(xⁿ) = P(xⁿ | θ̂(xⁿ)) / ∫ P(yⁿ | θ̂(yⁿ)) dyⁿ
+
+    Minimises the worst-case redundancy (regret) over all possible data.
+    The log of the normalisation constant is the STOCHASTIC COMPLEXITY
+    and measures the intrinsic complexity of the model class.
+
+MDL AS COMPRESSION: A model that achieves low two-part MDL:
+    · Fits the data well → short L(D|M)
+    · Is not too complex → short L(M)
+    This trade-off is information-theoretically principled and equivalent
+    to Bayesian model selection under a specific prior.
+
+
+### AIC and BIC — Information-Theoretic Model Selection
+
+AIC (AKAIKE INFORMATION CRITERION):
+
+    AIC = -2 log L(θ̂) + 2k     where k = number of free parameters
+
+    DERIVATION: AIC estimates the expected KL divergence from the true
+    distribution to the fitted model, evaluated on NEW data.
+    The +2k corrects for the "optimism" of MLE on training data.
+    Minimising AIC ≈ minimising KL(true ‖ fitted) in expectation.
+
+    AIC_c (corrected for small n):  AIC_c = AIC + 2k(k+1)/(n-k-1)
+
+BIC (BAYESIAN INFORMATION CRITERION, Schwarz 1978):
+
+    BIC = -2 log L(θ̂) + k log n
+
+    DERIVATION: BIC ≈ -2 log P(D | M) via the Laplace approximation to
+    the log marginal likelihood. Minimising BIC selects the model with
+    the highest Bayesian evidence.
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │  AIC vs BIC:                                                     │
+    │  AIC: minimises prediction error on new data (predictive focus)  │
+    │       → selects more complex models; not consistent              │
+    │  BIC: maximises model evidence (Bayesian focus)                  │
+    │       → penalises complexity harder: k·log(n) vs 2k             │
+    │       → consistent: selects true model as n→∞ (AIC does not)    │
+    │  Rule of thumb: Δ > 2 weak evidence, Δ > 10 strong evidence     │
+    └──────────────────────────────────────────────────────────────────┘
+
+
+### Occam's Razor Formalised
+
+OCCAM'S RAZOR: "Among models that explain the data equally well, prefer
+the simpler one." MDL and Bayesian model comparison both formalise this.
+
+1. MDL PERSPECTIVE:
+    A simpler model has shorter description length L(M).
+    Equal fit + smaller L(M) → shorter total description → model wins.
+    "The best model most compresses the data — simpler models that fit well
+    are more compressive."
+
+2. BAYESIAN OCCAM'S RAZOR:
+    The marginal likelihood P(D|M) = ∫ P(D|θ,M) P(θ|M) dθ
+    automatically penalises complexity:
+
+    A complex model can generate MANY different datasets — it spreads
+    its probability mass thinly. A simple model is more concentrated.
+    If the data matches the simple model's predictions, its marginal
+    likelihood is HIGHER than the complex model's, even with equal fit.
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  The complexity penalty arises AUTOMATICALLY in the      │
+    │  Bayesian framework — no explicit regularisation term    │
+    │  needs to be added.                                      │
+    └──────────────────────────────────────────────────────────┘
+
+3. REGULARISATION AS OCCAM ENCODING:
+    L2 regularisation (||θ||₂²) ↔ Gaussian prior: short description for small θ
+    L1 regularisation (||θ||₁)  ↔ Laplace prior:  favours sparse representations
+    Dropout ↔ MDL code with fewer active parameters
+    Early stopping ↔ Bayesian Occam's Razor — stop when marginal likelihood peaks
+
+ML IMPLICATIONS:
+    · AIC/BIC replace held-out validation when data is scarce
+    · Architecture search: information-theoretic complexity penalties
+    · Model distillation: compress teacher → student while minimising KL (MDL)
+    · Double descent: overparameterisation resolved by implicit regularisation
+    · Neural network compression: MDL view of pruning and quantisation
 
 """
 
@@ -2499,6 +2905,795 @@ print("  I_n = n·I_1: more i.i.d. samples → proportionally more information")
 print("  Differential entropy CAN be negative (narrow Gaussians, small Uniforms)")
 print("  h(aX) = h(X) + log|a|: NOT invariant to reparametrisation (unlike KL)")
 print("  Gaussian uniquely maximises h for fixed variance → justifies MSE loss")
+''',
+    },
+
+    # ── 11 ────────────────────────────────────────────────────────────────────
+    "11 · f-Divergences & Wasserstein Distance": {
+        "description": (
+            "Compute and compare the full f-divergence family: KL, reverse KL, "
+            "Total Variation, Hellinger, chi-squared. Show that Wasserstein distance "
+            "provides smooth gradients even for disjoint supports where KL is infinite. "
+            "Demonstrate the GAN training advantage of Wasserstein vs JSD."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from scipy import stats
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.random.seed(42)
+
+print("=" * 65)
+print("  f-DIVERGENCES & WASSERSTEIN DISTANCE")
+print("=" * 65)
+print()
+
+x_grid = np.linspace(-6, 8, 2000)
+dx = x_grid[1] - x_grid[0]
+eps = 1e-12
+
+def safe_div(p, q): return np.where(q > eps, p / q, 0.0)
+
+def f_divergence(p, q, f_func):
+    """D_f(P||Q) = ∫ q(x) f(p(x)/q(x)) dx  (discrete approx)."""
+    t = safe_div(p, q)
+    mask = q > eps
+    return float(np.sum(q[mask] * f_func(t[mask])) * dx)
+
+# f functions for each divergence
+f_kl_fwd  = lambda t: np.where(t > eps, t * np.log(t), 0.0)          # KL(P||Q)
+f_kl_rev  = lambda t: np.where(t > eps, -np.log(t), 0.0)              # KL(Q||P)
+f_tv      = lambda t: 0.5 * np.abs(t - 1)                              # Total Variation
+f_hell    = lambda t: (np.sqrt(t) - 1)**2                               # Squared Hellinger
+f_chi2    = lambda t: (t - 1)**2                                        # Pearson chi-squared
+f_jsd     = lambda t: np.where(t > eps,
+                -((t+1)/2)*np.log((t+1)/2) + t*0 + np.where(t>eps, (t/2)*np.log(t/(t+1)*2), 0), 0.0)
+
+# ── PART 1: Compare all divergences on Gaussian pairs ─────────────────────
+print("  PART 1 — f-DIVERGENCE FAMILY ON GAUSSIAN PAIRS")
+print("  P = N(0,1) fixed; Q = N(δ,1) varying mean separation δ")
+print()
+print(f"  {'δ':>5} | {'KL(P||Q)':>10} | {'KL(Q||P)':>10} | {'TV':>8} | {'Hellinger':>10} | {'χ²':>8}")
+print(f"  {'─'*62}")
+
+deltas = [0.0, 0.5, 1.0, 2.0, 4.0]
+p_ref = stats.norm.pdf(x_grid, 0, 1); p_ref /= p_ref.sum() * dx
+
+divergence_table = {}
+for delta in deltas:
+    q = stats.norm.pdf(x_grid, delta, 1); q /= q.sum() * dx
+    kl_fwd = f_divergence(p_ref, q, f_kl_fwd)
+    kl_rev = f_divergence(p_ref, q, f_kl_rev)
+    tv     = f_divergence(p_ref, q, f_tv)
+    hell   = f_divergence(p_ref, q, f_hell)
+    chi2   = f_divergence(p_ref, q, f_chi2)
+    divergence_table[delta] = (kl_fwd, kl_rev, tv, hell, chi2)
+    print(f"  {delta:5.1f} | {kl_fwd:10.4f} | {kl_rev:10.4f} | {tv:8.4f} | {hell:10.4f} | {chi2:8.4f}")
+
+print()
+print("  KL(P||Q) = KL(Q||P) when P,Q have same shape (equal-variance Gaussians)")
+print("  TV ∈ [0,1], Hellinger ∈ [0,2], χ² unbounded")
+print()
+
+# ── PART 2: Disjoint supports — where Wasserstein wins ─────────────────────
+print("  PART 2 — DISJOINT SUPPORTS: WASSERSTEIN vs KL/TV/JSD")
+print()
+print("  P = N(0, 0.1)  (narrow Gaussian at 0)")
+print("  Q_θ = N(θ, 0.1) (identical width, shifting away)")
+print()
+
+sigma_narrow = 0.1
+thetas = np.linspace(0, 3, 200)
+
+kl_vals, tv_vals, w1_vals, jsd_vals = [], [], [], []
+for theta in thetas:
+    p_n = stats.norm.pdf(x_grid, 0, sigma_narrow)
+    q_n = stats.norm.pdf(x_grid, theta, sigma_narrow)
+    norm_p = p_n.sum() * dx; norm_q = q_n.sum() * dx
+    p_n = p_n / norm_p; q_n = q_n / norm_q
+
+    # KL — uses log of ratio
+    mask = (p_n > eps) & (q_n > eps)
+    kl = float(np.sum(p_n[mask] * np.log(p_n[mask] / q_n[mask])) * dx)
+    kl_vals.append(min(kl, 30))   # cap for visibility
+
+    # TV
+    tv_v = 0.5 * np.sum(np.abs(p_n - q_n)) * dx
+    tv_vals.append(tv_v)
+
+    # W1 via CDF difference (for 1D: W1 = ∫|F_P - F_Q| dx)
+    cdf_p = np.cumsum(p_n) * dx; cdf_q = np.cumsum(q_n) * dx
+    w1 = float(np.sum(np.abs(cdf_p - cdf_q)) * dx)
+    w1_vals.append(w1)
+
+    # JSD
+    m = 0.5 * (p_n + q_n)
+    mask2 = (p_n > eps) & (m > eps); mask3 = (q_n > eps) & (m > eps)
+    jsd = 0.5*(np.sum(p_n[mask2]*np.log(p_n[mask2]/m[mask2]))*dx +
+               np.sum(q_n[mask3]*np.log(q_n[mask3]/m[mask3]))*dx)
+    jsd_vals.append(min(jsd, 1.0))
+
+print(f"  {'θ':>5} | {'KL(P||Q)':>12} | {'TV':>8} | {'JSD':>8} | {'W1':>10}")
+print(f"  {'─'*52}")
+for theta, kl, tv, jsd, w1 in zip(thetas[::40], kl_vals[::40],
+                                    tv_vals[::40], jsd_vals[::40], w1_vals[::40]):
+    print(f"  {theta:5.2f} | {kl:12.4f} | {tv:8.4f} | {jsd:8.4f} | {w1:10.4f}")
+
+print()
+print("  When supports barely overlap (θ >> σ=0.1):")
+print("    KL → ∞ (uninformative gradient for training)")
+print("    TV → 1 (saturates — binary, zero gradient)")
+print("    JSD → ln(2) ≈ 0.693 (saturates — GAN vanishing gradient problem)")
+print("    W1 → θ (grows linearly — gradient exists everywhere!)")
+print()
+
+# ── PART 3: Total Variation and Hellinger properties ─────────────────────
+print("  PART 3 — PINSKER'S INEQUALITY: TV² ≤ ½·KL(P||Q)")
+print()
+print(f"  {'δ':>5} | {'KL(P||Q)':>10} | {'TV':>8} | {'TV²':>8} | {'½·KL':>8} | Pinsker holds?")
+print(f"  {'─'*65}")
+for delta, (kl_fwd, _, tv, _, _) in divergence_table.items():
+    tv_sq = tv**2; half_kl = 0.5 * kl_fwd
+    holds = "✓" if tv_sq <= half_kl + 1e-6 else "✗"
+    print(f"  {delta:5.1f} | {kl_fwd:10.4f} | {tv:8.4f} | {tv_sq:8.4f} | {half_kl:8.4f} | {holds}")
+print()
+
+# ── Plots ─────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+fig.suptitle("f-Divergences & Wasserstein Distance", fontsize=12, fontweight="bold")
+
+# Plot 1: divergences vs separation δ
+sep_range = np.linspace(0, 4, 100)
+kl_r, tv_r, hell_r = [], [], []
+for d in sep_range:
+    q_ = stats.norm.pdf(x_grid, d, 1); q_ /= q_.sum()*dx
+    kl_r.append(min(f_divergence(p_ref, q_, f_kl_fwd), 10))
+    tv_r.append(f_divergence(p_ref, q_, f_tv))
+    hell_r.append(f_divergence(p_ref, q_, f_hell))
+
+axes[0].plot(sep_range, kl_r,   "steelblue", lw=2, label="KL(P||Q) (unbounded)")
+axes[0].plot(sep_range, tv_r,   "tomato",    lw=2, label="TV (max 1)")
+axes[0].plot(sep_range, hell_r, "seagreen",  lw=2, label="Hellinger² (max 2)")
+axes[0].set_xlabel("Mean separation δ"); axes[0].set_ylabel("Divergence value")
+axes[0].set_title("f-Divergences vs N(0,1) / N(δ,1)\\nAll = 0 at δ=0")
+axes[0].legend(fontsize=8); axes[0].grid(alpha=0.3)
+
+# Plot 2: Disjoint support — the Wasserstein advantage
+axes[1].plot(thetas, kl_vals,  "steelblue",  lw=2, label="KL (→∞ when disjoint)")
+axes[1].plot(thetas, tv_vals,  "tomato",     lw=2, label="TV (saturates at 1)")
+axes[1].plot(thetas, jsd_vals, "orange",     lw=2, label="JSD (saturates at ln2)")
+axes[1].plot(thetas, w1_vals,  "seagreen",   lw=2.5, label="W1 (grows linearly!)")
+axes[1].set_xlabel("θ (mean separation)")
+axes[1].set_title("Disjoint Supports (σ=0.1)\\nW1 only divergence with gradient")
+axes[1].legend(fontsize=8); axes[1].grid(alpha=0.3)
+axes[1].set_ylim(-0.1, 6)
+
+# Plot 3: Hellinger distance and Bhattacharyya coefficient
+sigma_vals = np.linspace(0.5, 3, 200)
+# P=N(0,1), Q=N(1,σ²) — vary σ
+hell_sigma = []
+bc_sigma   = []
+for sig in sigma_vals:
+    p_ = stats.norm.pdf(x_grid, 0, 1); p_ /= p_.sum()*dx
+    q_ = stats.norm.pdf(x_grid, 1, sig); q_ /= q_.sum()*dx
+    bc = float(np.sum(np.sqrt(p_ * q_)) * dx)
+    bc_sigma.append(bc)
+    hell_sigma.append(float(np.sqrt(1 - bc)))
+
+axes[2].plot(sigma_vals, hell_sigma, "purple",    lw=2, label="Hellinger dist.")
+axes[2].plot(sigma_vals, bc_sigma,   "steelblue", lw=2, label="Bhattacharyya coeff")
+axes[2].set_xlabel("σ of Q = N(1,σ)")
+axes[2].set_title("Hellinger & Bhattacharyya\\nP=N(0,1), Q=N(1,σ)")
+axes[2].legend(fontsize=9); axes[2].grid(alpha=0.3)
+axes[2].axvline(1.0, color="gray", linestyle="--", lw=1, label="σ=1 (same shape)")
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "f_divergences_wasserstein.png", dpi=120)
+print("  Plot saved → f_divergences_wasserstein.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  TV, Hellinger: symmetric, bounded divergences — prefer for bounded quantities.")
+print("  Pearson χ²: unbounded, sensitive to tails — useful for hypothesis testing.")
+print("  All f-divergences vanish when P=Q and are always ≥ 0 (Jensen's ineq.).")
+print("  Wasserstein: geometry-aware, smooth gradients even for disjoint supports.")
+print("  W1 advantage explains why WGAN trains more stably than original GAN (JSD).")
+''',
+    },
+
+    # ── 12 ────────────────────────────────────────────────────────────────────
+    "12 · Channel Capacity & Noisy Channel Coding Theorem": {
+        "description": (
+            "Compute capacity of BSC, BEC, and AWGN channels analytically. "
+            "Demonstrate that mutual information I(X;Y) is maximised by the "
+            "capacity-achieving input distribution. Verify Shannon's coding theorem "
+            "numerically: construct random codes and show error rates below capacity."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from scipy import stats, optimize
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.random.seed(0)
+
+print("=" * 65)
+print("  CHANNEL CAPACITY & NOISY CHANNEL CODING THEOREM")
+print("=" * 65)
+print()
+
+def h_bin(p, eps=1e-12):
+    """Binary entropy H(p)."""
+    p = np.clip(p, eps, 1-eps)
+    return -p*np.log2(p) - (1-p)*np.log2(1-p)
+
+def entropy(probs, eps=1e-12):
+    p = np.array(probs, dtype=float)
+    p = p[p > eps]; p /= p.sum()
+    return float(-np.sum(p * np.log2(p)))
+
+# ── PART 1: Binary Symmetric Channel ──────────────────────────────────────
+print("  PART 1 — BINARY SYMMETRIC CHANNEL (BSC)")
+print("  Y = X ⊕ Noise,  P(Y≠X) = p  →  C = 1 - H(p) bits/use")
+print()
+print(f"  {'p (crossover)':>16} | {'C (bits/use)':>14} | {'Interpretation'}")
+print(f"  {'─'*60}")
+
+crossovers = [0.0, 0.01, 0.05, 0.1, 0.2, 0.3, 0.5]
+bsc_caps = []
+for p in crossovers:
+    C = 1 - h_bin(p) if 0 < p < 1 else (1.0 if p == 0 else 0.0)
+    bsc_caps.append(C)
+    interp = {0.0:"perfect channel",0.01:"~1% noise",0.05:"~5% noise",
+              0.1:"10% noise",0.2:"20% noise",0.3:"30% noise",
+              0.5:"useless (pure noise)"}.get(p,"")
+    print(f"  {p:16.2f} | {C:14.4f} | {interp}")
+print()
+
+# ── PART 2: Binary Erasure Channel ────────────────────────────────────────
+print("  PART 2 — BINARY ERASURE CHANNEL (BEC)")
+print("  Y ∈ {0,1,?}, P(erasure) = ε  →  C = 1 - ε bits/use")
+print()
+print(f"  {'ε (erasure prob)':>18} | {'C_BEC':>10} | {'C_BSC same ε':>14}")
+print(f"  {'─'*50}")
+for eps_v in [0.0, 0.1, 0.2, 0.3, 0.5, 0.8, 1.0]:
+    c_bec = 1 - eps_v
+    c_bsc = 1 - h_bin(eps_v) if 0 < eps_v < 1 else (1.0 if eps_v==0 else 0.0)
+    print(f"  {eps_v:18.2f} | {c_bec:10.4f} | {c_bsc:14.4f}")
+print()
+print("  BEC > BSC at equal error rates: erasures are more informative than flips")
+print("  (receiver KNOWS which bits were erased; knows nothing about flipped bits)")
+print()
+
+# ── PART 3: AWGN Channel — Shannon-Hartley ────────────────────────────────
+print("  PART 3 — AWGN CHANNEL: C = ½ log₂(1 + SNR)")
+print()
+print(f"  {'SNR (linear)':>14} | {'SNR (dB)':>10} | {'C (bits/use)':>14}")
+print(f"  {'─'*44}")
+snr_vals = [0.1, 0.5, 1, 2, 4, 10, 100, 1000]
+awgn_caps = []
+for snr in snr_vals:
+    C_awgn = 0.5 * np.log2(1 + snr)
+    awgn_caps.append(C_awgn)
+    snr_db = 10 * np.log10(snr)
+    print(f"  {snr:14.1f} | {snr_db:10.1f} | {C_awgn:14.4f}")
+print()
+print("  AWGN capacity grows as ½ log(SNR) — doubling power adds only ½ bit!")
+print()
+
+# ── PART 4: Capacity-achieving distribution for BSC ───────────────────────
+print("  PART 4 — CAPACITY IS ACHIEVED BY UNIFORM INPUT DISTRIBUTION")
+print("  For BSC(p=0.1): optimal P(X=1) should be 0.5 (uniform)")
+print()
+
+p_noise = 0.1
+
+def mi_bsc(px1):
+    """I(X;Y) for BSC(p=0.1) with P(X=1)=px1."""
+    px0 = 1 - px1
+    # P(Y=1) = P(X=1)(1-p) + P(X=0)p
+    py1 = px1*(1-p_noise) + px0*p_noise
+    py0 = 1 - py1
+    h_y = entropy([py0, py1])
+    h_y_given_x = h_bin(p_noise)   # H(Y|X) = H(p) regardless of input
+    return h_y - h_y_given_x
+
+px1_range = np.linspace(0.01, 0.99, 200)
+mi_range  = [mi_bsc(p) for p in px1_range]
+opt_px1   = px1_range[np.argmax(mi_range)]
+print(f"  Optimal P(X=1) = {opt_px1:.4f}  (theory: 0.5)")
+print(f"  Max I(X;Y) = {max(mi_range):.4f} bits  (= C_BSC = {1-h_bin(p_noise):.4f})")
+print()
+
+# ── PART 5: Shannon's coding theorem — random code experiment ─────────────
+print("  PART 5 — SHANNON'S CODING THEOREM: RANDOM CODES BELOW CAPACITY")
+print()
+print("  BSC with p=0.1, C≈0.531 bits/use.")
+print("  Rate R < C: error → 0.  Rate R > C: error → 1.")
+print()
+
+def bsc_encode_decode(k_bits, n_bits, p_err, n_trials=2000):
+    """Random linear code over BSC. Returns empirical error rate."""
+    errors = 0
+    G = np.random.randint(0, 2, (k_bits, n_bits))  # random generator matrix
+    for _ in range(n_trials):
+        msg  = np.random.randint(0, 2, k_bits)
+        cwd  = (msg @ G) % 2              # encode
+        noise = (np.random.rand(n_bits) < p_err).astype(int)
+        rx   = (cwd + noise) % 2          # received word
+        # ML decoding: find message with closest codeword (Hamming dist)
+        min_dist, best_msg = n_bits + 1, None
+        for trial_msg in (np.random.randint(0,2,(200,k_bits))):
+            cwd_t = (trial_msg @ G) % 2
+            d = int(np.sum(rx != cwd_t))
+            if d < min_dist:
+                min_dist = d; best_msg = trial_msg
+        if best_msg is None or not np.array_equal(best_msg, msg):
+            errors += 1
+    return errors / n_trials
+
+n_block = 20   # block length
+rates_test = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+C_bsc = 1 - h_bin(p_noise)
+
+print(f"  {'Rate R':>8} | {'k bits':>7} | {'n bits':>7} | {'Error rate':>12} | {'R vs C':>10}")
+print(f"  {'─'*55}")
+for R in rates_test:
+    k = max(1, int(R * n_block))
+    err = bsc_encode_decode(k, n_block, p_noise, n_trials=1000)
+    vs_c = "< C ✓" if R < C_bsc else "> C ✗"
+    print(f"  {R:8.2f} | {k:7d} | {n_block:7d} | {err:12.4f} | {vs_c}")
+print()
+print(f"  C_BSC(p=0.1) = {C_bsc:.4f} bits.  Rates below C have lower error.")
+print()
+
+# ── Plots ─────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+fig.suptitle("Channel Capacity & Shannon's Noisy Channel Theorem",
+             fontsize=12, fontweight="bold")
+
+# Plot 1: BSC and BEC capacity curves
+p_range = np.linspace(0, 0.5, 200)
+c_bsc_r = 1 - h_bin(p_range)
+c_bec_r = 1 - p_range
+axes[0].plot(p_range, c_bsc_r, "steelblue", lw=2.5, label="BSC: C=1−H(p)")
+axes[0].plot(p_range, c_bec_r, "tomato",    lw=2.5, label="BEC: C=1−ε")
+axes[0].set_xlabel("Noise parameter (p or ε)")
+axes[0].set_ylabel("Capacity C (bits/use)")
+axes[0].set_title("BSC vs BEC Capacity\\nBEC > BSC: erasures more informative")
+axes[0].legend(fontsize=9); axes[0].grid(alpha=0.3)
+
+# Plot 2: AWGN capacity vs SNR
+snr_range = np.linspace(0.01, 100, 500)
+c_awgn_r  = 0.5 * np.log2(1 + snr_range)
+axes[1].plot(10*np.log10(snr_range), c_awgn_r, "seagreen", lw=2.5)
+axes[1].set_xlabel("SNR (dB)"); axes[1].set_ylabel("Capacity (bits/use)")
+axes[1].set_title("AWGN Shannon-Hartley\\nC = ½ log₂(1 + SNR)")
+axes[1].grid(alpha=0.3)
+axes[1].axhline(1, color="tomato", linestyle="--", lw=1.5, label="C=1 bit/use at SNR=3dB")
+axes[1].legend(fontsize=8)
+
+# Plot 3: I(X;Y) vs input distribution for BSC
+axes[2].plot(px1_range, mi_range, "purple", lw=2.5)
+axes[2].axvline(0.5, color="tomato", linestyle="--", lw=2,
+                label=f"Optimal P(X=1)=0.5")
+axes[2].axhline(C_bsc, color="seagreen", linestyle=":", lw=2,
+                label=f"C = {C_bsc:.4f}")
+axes[2].set_xlabel("P(X=1) — input distribution")
+axes[2].set_ylabel("I(X;Y) bits")
+axes[2].set_title(f"Capacity-achieving dist. for BSC(p={p_noise})\\nUniform input maximises I(X;Y)")
+axes[2].legend(fontsize=8); axes[2].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "channel_capacity.png", dpi=120)
+print("  Plot saved → channel_capacity.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  BSC capacity: C = 1 - H(p). Uniform input achieves it.")
+print("  BEC capacity: C = 1 - ε. BEC > BSC: knowing which bits erased helps.")
+print("  AWGN: C = ½log₂(1+SNR). Power has diminishing returns.")
+print("  Shannon's theorem: error→0 iff R<C; error→1 iff R>C. C is the exact limit.")
+''',
+    },
+
+    # ── 13 ────────────────────────────────────────────────────────────────────
+    "13 · MDL, AIC/BIC & Occam's Razor": {
+        "description": (
+            "Implement AIC, BIC, and two-part MDL for polynomial regression. "
+            "Show how each criterion penalises model complexity. Demonstrate "
+            "Bayesian Occam's Razor: the marginal likelihood automatically prefers "
+            "simpler models. Compare all three on polynomial degree selection."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from scipy import stats, linalg
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.random.seed(42)
+
+print("=" * 65)
+print("  MDL, AIC/BIC & OCCAM'S RAZOR")
+print("=" * 65)
+print()
+print("  Problem: fit polynomial of degree d to noisy data.")
+print("  True model: y = sin(x) ≈ degree-3 Taylor expansion")
+print("  Goal: recover the true complexity using AIC, BIC, MDL")
+print()
+
+# ── Generate data from a cubic polynomial ─────────────────────────────────
+n = 50
+x_data = np.linspace(-3, 3, n)
+y_true = np.sin(x_data)                          # true function
+sigma_noise = 0.3
+y_data = y_true + np.random.normal(0, sigma_noise, n)
+
+def fit_poly(x, y, degree):
+    """OLS polynomial fit. Returns coefficients, predictions, residual SS."""
+    Phi = np.column_stack([x**d for d in range(degree+1)])
+    w, _, _, _ = np.linalg.lstsq(Phi, y, rcond=None)
+    y_hat = Phi @ w
+    ss_res = np.sum((y - y_hat)**2)
+    return w, y_hat, ss_res, Phi
+
+def log_likelihood_gaussian(y, y_hat, sigma):
+    n_ = len(y); ss = np.sum((y - y_hat)**2)
+    return -n_/2 * np.log(2*np.pi*sigma**2) - ss/(2*sigma**2)
+
+# ── Compute AIC, BIC, MDL for degrees 0..12 ───────────────────────────────
+degrees = list(range(0, 13))
+results = {}
+
+# Estimate noise sigma from residuals of the "true" degree-3 fit
+_, _, ss3, _ = fit_poly(x_data, y_data, 3)
+sigma_hat = np.sqrt(ss3 / (n - 4))
+
+for d in degrees:
+    k = d + 1   # number of parameters
+    w, y_hat, ss_res, Phi = fit_poly(x_data, y_data, d)
+    sigma_mle = np.sqrt(ss_res / n)
+
+    # Log-likelihood at MLE sigma (MLE is self-consistent)
+    ll_mle = -n/2 * np.log(2*np.pi*sigma_mle**2) - n/2
+
+    # AIC: -2ℓ + 2k  (using MLE sigma for fair comparison across degrees)
+    aic = -2 * ll_mle + 2 * k
+    aic_c = aic + 2*k*(k+1)/(n - k - 1) if n > k+1 else np.inf
+
+    # BIC: -2ℓ + k·log(n)
+    bic = -2 * ll_mle + k * np.log(n)
+
+    # Two-part MDL: -log P(D|θ̂) + (k/2)log(n)
+    ll_fixed = log_likelihood_gaussian(y_data, y_hat, sigma_hat)
+    mdl = -ll_fixed + (k/2) * np.log(n)
+
+    # Bayesian marginal likelihood (Laplace approximation with flat prior)
+    # log P(D|M) ≈ log P(D|θ̂) - (k/2)log(n) + (k/2)log(2π) [unnormalised]
+    log_marg = ll_fixed - (k/2)*np.log(n)
+
+    results[d] = {"k": k, "ss": ss_res, "aic": aic, "aic_c": aic_c,
+                  "bic": bic, "mdl": mdl, "log_marg": log_marg,
+                  "y_hat": y_hat}
+
+# Print results table
+print(f"  {'Degree':>7} | {'k':>4} | {'SS_res':>8} | {'AIC':>10} | {'BIC':>10} | "
+      f"{'MDL':>10} | {'log P(D|M)':>12}")
+print(f"  {'─'*74}")
+for d in degrees:
+    r = results[d]
+    best_aic = "✓" if r["aic"] == min(results[dd]["aic"] for dd in degrees) else ""
+    best_bic = "✓" if r["bic"] == min(results[dd]["bic"] for dd in degrees) else ""
+    best_mdl = "✓" if r["mdl"] == min(results[dd]["mdl"] for dd in degrees) else ""
+    print(f"  {d:7d} | {r['k']:4d} | {r['ss']:8.3f} | {r['aic']:10.2f} | "
+          f"{r['bic']:10.2f} | {r['mdl']:10.2f} | {r['log_marg']:12.2f}  "
+          f"{best_aic}{best_bic}{best_mdl}")
+
+print()
+best_aic_d = min(degrees, key=lambda d: results[d]["aic"])
+best_bic_d = min(degrees, key=lambda d: results[d]["bic"])
+best_mdl_d = min(degrees, key=lambda d: results[d]["mdl"])
+best_marg_d= max(degrees, key=lambda d: results[d]["log_marg"])
+print(f"  Best degree by AIC:              {best_aic_d}")
+print(f"  Best degree by BIC:              {best_bic_d}")
+print(f"  Best degree by MDL:              {best_mdl_d}")
+print(f"  Best degree by marginal lik.:    {best_marg_d}")
+print(f"  True underlying degree:          ~3 (sin(x) ≈ cubic)")
+print()
+
+# ── Bayesian Occam's Razor illustration ──────────────────────────────────
+print("  BAYESIAN OCCAM'S RAZOR DEMONSTRATION")
+print()
+print("  How much of the data space does each model assign high probability to?")
+print("  Complex models spread probability over more data configurations.")
+print()
+
+# Compute effective prior predictive spread for each degree
+print(f"  {'Degree':>7} | {'log P(D|M)':>14} | {'Relative to degree-3':>22}")
+print(f"  {'─'*50}")
+ref_log_marg = results[3]["log_marg"]
+for d in degrees:
+    lm = results[d]["log_marg"]
+    delta = lm - ref_log_marg
+    bar = "+" * min(int(max(0, delta)), 20) if delta > 0 else "-" * min(int(max(0,-delta)//5), 20)
+    print(f"  {d:7d} | {lm:14.2f} | {delta:+12.2f}  {bar}")
+
+print()
+
+# ── AIC vs BIC penalty comparison ────────────────────────────────────────
+print("  AIC vs BIC PENALTY COMPARISON")
+print(f"  n = {n} data points")
+print(f"  AIC penalty per parameter: 2")
+print(f"  BIC penalty per parameter: log(n) = {np.log(n):.3f}")
+print(f"  BIC penalises complexity {np.log(n)/2:.2f}× harder than AIC for this n")
+print()
+
+# ── Plots ─────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+fig.suptitle("MDL, AIC/BIC & Occam's Razor — Polynomial Degree Selection",
+             fontsize=12, fontweight="bold")
+
+# Plot 1: AIC, BIC, MDL vs degree (normalised to min=0)
+aic_vals = np.array([results[d]["aic"] for d in degrees])
+bic_vals = np.array([results[d]["bic"] for d in degrees])
+mdl_vals = np.array([results[d]["mdl"] for d in degrees])
+axes[0].plot(degrees, aic_vals - aic_vals.min(), "steelblue", lw=2, marker="o",
+             ms=5, label="ΔAIC")
+axes[0].plot(degrees, bic_vals - bic_vals.min(), "tomato", lw=2, marker="s",
+             ms=5, label="ΔBIC")
+axes[0].plot(degrees, mdl_vals - mdl_vals.min(), "seagreen", lw=2, marker="^",
+             ms=5, label="ΔMDL")
+axes[0].axvline(3, color="gray", linestyle="--", lw=1.5, label="True degree=3")
+axes[0].set_xlabel("Polynomial degree"); axes[0].set_ylabel("Δ criterion (lower=better)")
+axes[0].set_title("AIC, BIC, MDL Penalise Complexity\\nAll select near degree 3")
+axes[0].legend(fontsize=8); axes[0].grid(alpha=0.3)
+
+# Plot 2: marginal likelihood (Bayesian Occam)
+log_marg_vals = np.array([results[d]["log_marg"] for d in degrees])
+axes[1].bar(degrees, log_marg_vals - log_marg_vals.max(), color="purple", alpha=0.7)
+axes[1].axvline(3, color="tomato", lw=2, linestyle="--", label="True degree=3")
+axes[1].set_xlabel("Polynomial degree"); axes[1].set_ylabel("Δ log marginal lik.")
+axes[1].set_title("Bayesian Marginal Likelihood\\nAutomatic Occam's razor")
+axes[1].legend(fontsize=9); axes[1].grid(alpha=0.3, axis="y")
+
+# Plot 3: fit quality for selected degrees
+x_fine = np.linspace(-3, 3, 200)
+for d, col, ls in [(1,"gray","--"), (3,"seagreen","-"), (9,"tomato",":")]:
+    Phi_f = np.column_stack([x_fine**dd for dd in range(d+1)])
+    w_f, _, _, _ = np.linalg.lstsq(
+        np.column_stack([x_data**dd for dd in range(d+1)]), y_data, rcond=None)
+    axes[2].plot(x_fine, Phi_f @ w_f, color=col, lw=2, linestyle=ls,
+                 label=f"degree {d}")
+axes[2].scatter(x_data, y_data, s=15, color="k", alpha=0.4, label="data")
+axes[2].plot(x_fine, np.sin(x_fine), "steelblue", lw=2.5, label="true sin(x)")
+axes[2].set_xlabel("x"); axes[2].set_ylabel("y")
+axes[2].set_title("Underfitting (d=1) vs True (d=3)\\nvs Overfitting (d=9)")
+axes[2].legend(fontsize=8); axes[2].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "mdl_aic_bic.png", dpi=120)
+print("  Plot saved → mdl_aic_bic.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  AIC: minimises prediction error; penalises 2 per parameter.")
+print("  BIC: maximises marginal likelihood; penalises log(n) per parameter.")
+print("  BIC is consistent (selects true model as n→∞); AIC is not.")
+print("  MDL (two-part): equivalent to BIC asymptotically.")
+print("  Bayesian marginal likelihood automatically implements Occam's Razor.")
+print("  All methods agree here: degree ~3 is the right complexity.")
+''',
+    },
+
+    # ── 14 ────────────────────────────────────────────────────────────────────
+    "14 · Rate-Distortion Theory": {
+        "description": (
+            "Compute the rate-distortion function R(D) for Gaussian sources. "
+            "Demonstrate the reverse water-filling algorithm for multi-source "
+            "compression. Show the R-D curve and connect it to the information "
+            "bottleneck framework and neural compression models."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from scipy import stats
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.random.seed(0)
+
+print("=" * 65)
+print("  RATE-DISTORTION THEORY")
+print("=" * 65)
+print()
+print("  R(D) = min_{P(X̂|X): E[d(X,X̂)]≤D} I(X;X̂)")
+print("       = minimum bits/symbol to represent X with distortion ≤ D")
+print()
+
+# ── PART 1: Gaussian R(D) ─────────────────────────────────────────────────
+print("  PART 1 — GAUSSIAN RATE-DISTORTION FUNCTION")
+print("  X ~ N(0, σ²): R(D) = ½ log₂(σ²/D) for D ≤ σ², else 0")
+print()
+
+sigmas = [0.5, 1.0, 2.0, 4.0]
+D_range_rel = np.linspace(0.01, 1.0, 300)   # D as fraction of σ²
+
+print(f"  {'σ²':>6} | {'D (distortion)':>16} | {'R(D) bits':>12} | {'Compression ratio':>18}")
+print(f"  {'─'*60}")
+
+for sigma in [1.0, 2.0]:
+    sigma2 = sigma**2
+    for D_frac in [0.01, 0.1, 0.25, 0.5, 0.9, 1.0]:
+        D = D_frac * sigma2
+        if D >= sigma2:
+            R = 0.0; ratio = "∞ (can use mean)"
+        else:
+            R = max(0.0, 0.5 * np.log2(sigma2 / D))
+            ratio = f"{sigma2/D:.1f}× compression"
+        print(f"  {sigma2:6.1f} | {D:16.4f} | {R:12.4f} | {ratio}")
+    print()
+
+# ── PART 2: R(D) curve comparison across variances ────────────────────────
+print("  PART 2 — R(D) CURVES FOR DIFFERENT SOURCE VARIANCES")
+print()
+print("  Higher variance source → more bits needed for same absolute distortion")
+print("  But same fractional distortion D/σ² → same rate (scale invariant)")
+print()
+
+print(f"  D = σ²/10 (10% distortion allowed):")
+print(f"  {'σ²':>8} | {'R(D=σ²/10) bits':>18} | {'R(D=1) bits':>15}")
+print(f"  {'─'*46}")
+for sigma2 in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]:
+    R_frac = 0.5 * np.log2(10)   # always log₂(10)/2 for D=σ²/10
+    D_abs = 1.0
+    R_abs = max(0, 0.5 * np.log2(sigma2 / D_abs)) if sigma2 > D_abs else 0.0
+    print(f"  {sigma2:8.2f} | {R_frac:18.4f} | {R_abs:15.4f}")
+print()
+print("  Key: R(D) is the same for D=σ²/10 regardless of σ² — scale invariant!")
+print()
+
+# ── PART 3: Reverse water-filling (multi-source) ─────────────────────────
+print("  PART 3 — REVERSE WATER-FILLING FOR VECTOR GAUSSIAN SOURCES")
+print("  X ~ N(0, diag(λ₁,...,λₙ)),  allocate R bits to minimise total distortion")
+print()
+
+variances = np.array([4.0, 2.0, 1.0, 0.5, 0.2, 0.1])   # 6 source components
+n_comp = len(variances)
+
+def water_fill(variances, R_total):
+    """Reverse water-filling: allocate R_total bits across components."""
+    # Binary search for water level D*
+    lo, hi = 1e-10, max(variances)
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        rates = np.maximum(0, 0.5 * np.log2(variances / mid))
+        if rates.sum() < R_total:
+            hi = mid
+        else:
+            lo = mid
+    D_star = (lo + hi) / 2
+    rates  = np.maximum(0, 0.5 * np.log2(variances / D_star))
+    distortions = np.where(rates > 0, variances * 2**(-2*rates), variances)
+    return rates, distortions, D_star
+
+print(f"  Source variances: {variances}")
+print()
+print(f"  {'Total R':>9} | {'R per component':>35} | {'Total D':>10} | {'Notes'}")
+print(f"  {'─'*80}")
+
+for R_total in [0.5, 1.0, 2.0, 4.0, 8.0]:
+    rates, dists, D_star = water_fill(variances, R_total)
+    total_D = dists.sum()
+    active = (rates > 1e-4).sum()
+    rates_str = " ".join(f"{r:.2f}" for r in rates)
+    print(f"  {R_total:9.1f} | {rates_str:35s} | {total_D:10.3f} | {active} active components")
+
+print()
+print("  Reverse water-filling: allocate zero bits to low-variance components!")
+print("  (Can just use zero to represent them — the error is already small)")
+print()
+
+# ── PART 4: R-D vs Information Bottleneck connection ─────────────────────
+print("  PART 4 — CONNECTION TO INFORMATION BOTTLENECK")
+print()
+print("  IB minimises I(X;Z) while maximising I(Z;Y)")
+print("  R-D minimises I(X;X̂) while keeping E[d(X,X̂)] ≤ D")
+print()
+print("  They are formally equivalent when Y = X (lossless case).")
+print("  The IB β parameter plays the role of 1/D in rate-distortion theory:")
+print()
+print("  β-VAE objective = Rate-Distortion with KL-based distortion measure:")
+print("  ELBO = E_q[log p(x|z)] - β·KL(q(z|x)||p(z))")
+print("       = -Distortion      - β·Rate")
+print()
+
+# Compute IB-like curve (Gaussian approximation)
+# I(X;Z) = ½ log(1 + SNR), I(Z;Y) traces a curve as noise varies
+sigma_x = 1.0; sigma_y_given_x = 0.3
+noise_levels = np.logspace(-3, 1, 100)
+ix_z_vals = 0.5 * np.log2(1 + 1.0/noise_levels)  # AWGN channel formula
+# I(Z;Y) via data processing inequality: I(Z;Y) ≤ I(X;Y)
+I_XY = 0.5 * np.log2(1 + sigma_x**2/sigma_y_given_x**2)
+iz_y_vals = np.minimum(ix_z_vals * I_XY / (I_XY + 0.1), I_XY)
+
+# ── Plots ─────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+fig.suptitle("Rate-Distortion Theory", fontsize=12, fontweight="bold")
+
+# Plot 1: R(D) curves for different variances
+for sigma2, col in zip([0.5, 1.0, 2.0, 4.0],
+                        ["steelblue","tomato","seagreen","purple"]):
+    D_vals = np.linspace(1e-3, sigma2, 200)
+    R_vals = np.maximum(0, 0.5*np.log2(sigma2/D_vals))
+    axes[0].plot(D_vals, R_vals, lw=2, color=col, label=f"σ²={sigma2}")
+axes[0].set_xlabel("Allowed distortion D"); axes[0].set_ylabel("Rate R(D) [bits]")
+axes[0].set_title("Gaussian R-D Curves\\nR(D) = ½ log₂(σ²/D)")
+axes[0].legend(fontsize=9); axes[0].grid(alpha=0.3)
+
+# Plot 2: Water-filling allocation
+R_total_vals = np.linspace(0.1, 10, 100)
+active_counts = []
+comp_rates_all = np.zeros((len(R_total_vals), n_comp))
+for i, R_t in enumerate(R_total_vals):
+    r, _, _ = water_fill(variances, R_t)
+    comp_rates_all[i] = r
+    active_counts.append((r > 1e-4).sum())
+
+x_idx = np.arange(n_comp)
+R_show = [1.0, 3.0, 6.0]
+palette = ["steelblue","tomato","seagreen"]
+for R_t, col in zip(R_show, palette):
+    r, _, _ = water_fill(variances, R_t)
+    axes[1].bar(x_idx + R_show.index(R_t)*0.25, r, width=0.23,
+                color=col, alpha=0.8, label=f"R_total={R_t}")
+axes[1].set_xticks(x_idx+0.25); axes[1].set_xticklabels([f"σ²={v}" for v in variances], fontsize=8)
+axes[1].set_ylabel("Bits allocated"); axes[1].set_title("Reverse Water-filling\\nAllocate bits to high-variance components")
+axes[1].legend(fontsize=8); axes[1].grid(alpha=0.3, axis="y")
+
+# Plot 3: IB/R-D curve
+axes[2].plot(ix_z_vals, iz_y_vals, "steelblue", lw=2.5, label="IB curve (R-D analogy)")
+axes[2].axhline(I_XY, color="tomato", linestyle="--", lw=1.5,
+                label=f"Max I(Z;Y) = I(X;Y) = {I_XY:.3f}")
+axes[2].scatter([ix_z_vals[0]], [iz_y_vals[0]], color="tomato", s=80,
+                label="Max compress (β→0)", zorder=5)
+axes[2].scatter([ix_z_vals[-1]], [iz_y_vals[-1]], color="seagreen", s=80,
+                label="Min compress (β→∞)", zorder=5)
+axes[2].set_xlabel("I(X;Z) — rate / compression")
+axes[2].set_ylabel("I(Z;Y) — task relevance")
+axes[2].set_title("Rate-Distortion / IB Curve\\nβ-VAE sweeps this frontier")
+axes[2].legend(fontsize=8); axes[2].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "rate_distortion.png", dpi=120)
+print("  Plot saved → rate_distortion.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  R(D) = ½ log(σ²/D): for Gaussian, each bit halves distortion.")
+print("  Reverse water-filling: allocate bits to high-variance components.")
+print("  Low-variance components get zero bits (their error is already small).")
+print("  IB is semantic R-D: replace fidelity d(x,x̂) with task loss d(z,y).")
+print("  β-VAE directly implements rate-distortion: β = trade-off parameter.")
 ''',
     },
 

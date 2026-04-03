@@ -1,0 +1,570 @@
+├── 00_ML_Foundation_Math_Core
+│   └── topics
+│       │
+│       ├── 01_Linear_Algebra.py
+│       │   ├── 01_Scalars_Vectors_Matrices_Tensors.py
+│       │   ├── 02_Vector_Spaces_and_Subspaces.py
+│       │   ├── 03_Linear_Independence_and_Span.py
+│       │   ├── 04_Basis_and_Dimension.py
+│       │   ├── 05_Matrix_Operations.py
+│       │   │   ├── addition_subtraction.py
+│       │   │   ├── multiplication_dot_product.py
+│       │   │   ├── transpose.py
+│       │   │   ├── inverse.py
+│       │   │   └── hadamard_product.py
+│       │   ├── 06_Systems_of_Linear_Equations.py
+│       │   │   ├── gaussian_elimination.py
+│       │   │   ├── gauss_jordan.py
+│       │   │   └── lu_decomposition.py
+│       │   ├── 07_Determinants.py
+│       │   │   ├── cofactor_expansion.py
+│       │   │   ├── properties_of_determinants.py
+│       │   │   └── cramers_rule.py
+│       │   ├── 08_Eigenvalues_and_Eigenvectors.py
+│       │   │   ├── characteristic_polynomial.py
+│       │   │   ├── diagonalization.py
+│       │   │   ├── spectral_theorem.py
+│       │   │   └── power_iteration.py
+│       │   ├── 09_Matrix_Decompositions.py
+│       │   │   ├── LU_decomposition.py
+│       │   │   ├── QR_decomposition.py
+│       │   │   ├── cholesky_decomposition.py
+│       │   │   ├── SVD_singular_value_decomposition.py
+│       │   │   └── eigendecomposition.py
+│       │   ├── 10_Norms_and_Distance_Metrics.py
+│       │   │   ├── L1_manhattan_norm.py
+│       │   │   ├── L2_euclidean_norm.py
+│       │   │   ├── Lp_norm.py
+│       │   │   ├── frobenius_norm.py
+│       │   │   └── nuclear_norm.py
+│       │   ├── 11_Inner_Products_and_Orthogonality.py
+│       │   │   ├── dot_product_and_projections.py
+│       │   │   ├── gram_schmidt_orthogonalization.py
+│       │   │   ├── orthonormal_bases.py
+│       │   │   └── orthogonal_complement.py
+│       │   ├── 12_Linear_Transformations.py
+│       │   │   ├── kernel_and_image.py
+│       │   │   ├── rank_nullity_theorem.py
+│       │   │   └── change_of_basis.py
+│       │   ├── 13_Special_Matrices.py
+│       │   │   ├── symmetric_and_skew_symmetric.py
+│       │   │   ├── positive_definite_semidefinite.py
+│       │   │   ├── orthogonal_unitary_matrices.py
+│       │   │   ├── diagonal_and_triangular.py
+│       │   │   ├── sparse_matrices.py
+│       │   │   └── toeplitz_circulant_matrices.py
+│       │   ├── 14_Principal_Component_Analysis_Math.py
+│       │   │   ├── covariance_matrix.py
+│       │   │   ├── variance_explained.py
+│       │   │   └── low_rank_approximation.py
+│       │   └── 15_Tensor_Operations.py
+│       │       ├── tensor_products.py
+│       │       ├── tensor_contraction.py
+│       │       ├── tensor_decompositions.py
+│       │       └── broadcasting_rules.py
+│       │
+│       ├── 02_Calculus_&_Optimization.py
+│       │   ├── 01_Limits_and_Continuity.py
+│       │   │   ├── epsilon_delta_definition.py
+│       │   │   ├── squeeze_theorem.py
+│       │   │   └── continuity_types.py
+│       │   ├── 02_Single_Variable_Differentiation.py
+│       │   │   ├── definition_of_derivative.py
+│       │   │   ├── power_product_quotient_rules.py
+│       │   │   ├── chain_rule.py
+│       │   │   ├── implicit_differentiation.py
+│       │   │   └── higher_order_derivatives.py
+│       │   ├── 03_Multivariable_Differentiation.py
+│       │   │   ├── partial_derivatives.py
+│       │   │   ├── directional_derivatives.py
+│       │   │   ├── gradient_vector.py
+│       │   │   ├── jacobian_matrix.py
+│       │   │   ├── hessian_matrix.py
+│       │   │   └── total_derivative.py
+│       │   ├── 04_Integration.py
+│       │   │   ├── riemann_sums.py
+│       │   │   ├── fundamental_theorem_of_calculus.py
+│       │   │   ├── integration_techniques.py
+│       │   │   ├── multiple_integrals.py
+│       │   │   └── change_of_variables.py
+│       │   ├── 05_Vector_Calculus.py
+│       │   │   ├── gradient_divergence_curl.py
+│       │   │   ├── laplacian.py
+│       │   │   ├── line_and_surface_integrals.py
+│       │   │   ├── greens_theorem.py
+│       │   │   ├── stokes_theorem.py
+│       │   │   └── divergence_theorem.py
+│       │   ├── 06_Taylor_Series_and_Approximations.py
+│       │   │   ├── taylor_maclaurin_expansion.py
+│       │   │   ├── multivariate_taylor.py
+│       │   │   ├── linearization.py
+│       │   │   └── error_analysis.py
+│       │   ├── 07_Optimization_Theory.py
+│       │   │   ├── critical_points_and_saddle_points.py
+│       │   │   ├── second_derivative_test.py
+│       │   │   ├── convex_vs_nonconvex.py
+│       │   │   ├── constrained_optimization.py
+│       │   │   │   ├── lagrange_multipliers.py
+│       │   │   │   └── KKT_conditions.py
+│       │   │   └── global_vs_local_minima.py
+│       │   ├── 08_Gradient_Descent_Variants.py
+│       │   │   ├── vanilla_gradient_descent.py
+│       │   │   ├── stochastic_gradient_descent.py
+│       │   │   ├── mini_batch_gradient_descent.py
+│       │   │   ├── momentum.py
+│       │   │   ├── nesterov_accelerated_gradient.py
+│       │   │   ├── adagrad.py
+│       │   │   ├── RMSprop.py
+│       │   │   ├── adam_adamw.py
+│       │   │   └── learning_rate_schedules.py
+│       │   ├── 09_Convex_Optimization.py
+│       │   │   ├── convex_sets_and_functions.py
+│       │   │   ├── convex_optimization_problems.py
+│       │   │   ├── duality_theory.py
+│       │   │   ├── subgradient_methods.py
+│       │   │   └── proximal_algorithms.py
+│       │   ├── 10_Numerical_Differentiation.py
+│       │   │   ├── finite_differences.py
+│       │   │   ├── automatic_differentiation.py
+│       │   │   │   ├── forward_mode.py
+│       │   │   │   └── reverse_mode_backprop.py
+│       │   │   └── numerical_stability.py
+│       │   └── 11_Differential_Equations_for_ML.py
+│       │       ├── ODEs_for_neural_ODEs.py
+│       │       ├── gradient_flow.py
+│       │       └── continuous_time_optimization.py
+│       │
+│       ├── 03_Statistical_Inference.py
+│       │   ├── 01_Foundations_of_Statistics.py
+│       │   │   ├── population_vs_sample.py
+│       │   │   ├── descriptive_statistics.py
+│       │   │   │   ├── mean_median_mode.py
+│       │   │   │   ├── variance_std_deviation.py
+│       │   │   │   ├── skewness_and_kurtosis.py
+│       │   │   │   └── quantiles_and_percentiles.py
+│       │   │   └── statistical_distances.py
+│       │   │       ├── KL_divergence.py
+│       │   │       ├── JS_divergence.py
+│       │   │       ├── wasserstein_distance.py
+│       │   │       └── total_variation_distance.py
+│       │   ├── 02_Estimation_Theory.py
+│       │   │   ├── point_estimation.py
+│       │   │   │   ├── method_of_moments.py
+│       │   │   │   ├── maximum_likelihood_estimation.py
+│       │   │   │   └── MAP_estimation.py
+│       │   │   ├── interval_estimation.py
+│       │   │   │   ├── confidence_intervals.py
+│       │   │   │   └── credible_intervals.py
+│       │   │   └── estimator_properties.py
+│       │   │       ├── bias_variance_tradeoff.py
+│       │   │       ├── consistency.py
+│       │   │       ├── efficiency.py
+│       │   │       └── sufficiency.py
+│       │   ├── 03_Hypothesis_Testing.py
+│       │   │   ├── null_alternative_hypothesis.py
+│       │   │   ├── p_values_and_significance.py
+│       │   │   ├── type_I_and_type_II_errors.py
+│       │   │   ├── statistical_power.py
+│       │   │   ├── t_tests_z_tests_chi_squared.py
+│       │   │   ├── ANOVA.py
+│       │   │   └── multiple_testing_correction.py
+│       │   ├── 04_Bayesian_Inference.py
+│       │   │   ├── bayes_theorem_in_depth.py
+│       │   │   ├── prior_likelihood_posterior.py
+│       │   │   ├── conjugate_priors.py
+│       │   │   ├── bayesian_updating.py
+│       │   │   ├── empirical_bayes.py
+│       │   │   ├── hierarchical_models.py
+│       │   │   └── variational_inference.py
+│       │   ├── 05_Regression_Analysis.py
+│       │   │   ├── simple_linear_regression.py
+│       │   │   ├── multiple_linear_regression.py
+│       │   │   ├── ordinary_least_squares.py
+│       │   │   ├── ridge_lasso_elasticnet.py
+│       │   │   ├── logistic_regression_stats.py
+│       │   │   ├── generalized_linear_models.py
+│       │   │   └── regression_diagnostics.py
+│       │   ├── 06_Resampling_Methods.py
+│       │   │   ├── bootstrap.py
+│       │   │   ├── jackknife.py
+│       │   │   ├── cross_validation.py
+│       │   │   └── permutation_tests.py
+│       │   └── 07_Asymptotic_Theory.py
+│       │       ├── law_of_large_numbers.py
+│       │       ├── central_limit_theorem.py
+│       │       ├── delta_method.py
+│       │       └── consistency_and_asymptotic_normality.py
+│       │
+│       ├── 04_Probability_Theory.py
+│       │   ├── 01_Probability_Fundamentals.py
+│       │   │   ├── sample_space_events_sigma_algebra.py
+│       │   │   ├── axioms_of_probability.py
+│       │   │   ├── conditional_probability.py
+│       │   │   ├── independence.py
+│       │   │   ├── bayes_theorem.py
+│       │   │   └── law_of_total_probability.py
+│       │   ├── 02_Random_Variables.py
+│       │   │   ├── discrete_random_variables.py
+│       │   │   ├── continuous_random_variables.py
+│       │   │   ├── PMF_PDF_CDF.py
+│       │   │   ├── expectation_and_variance.py
+│       │   │   ├── moments_and_moment_generating_functions.py
+│       │   │   └── characteristic_functions.py
+│       │   ├── 03_Discrete_Distributions.py
+│       │   │   ├── bernoulli.py
+│       │   │   ├── binomial.py
+│       │   │   ├── multinomial.py
+│       │   │   ├── geometric.py
+│       │   │   ├── negative_binomial.py
+│       │   │   ├── poisson.py
+│       │   │   └── hypergeometric.py
+│       │   ├── 04_Continuous_Distributions.py
+│       │   │   ├── uniform.py
+│       │   │   ├── gaussian_normal.py
+│       │   │   ├── multivariate_gaussian.py
+│       │   │   ├── exponential.py
+│       │   │   ├── gamma_and_beta.py
+│       │   │   ├── chi_squared.py
+│       │   │   ├── students_t.py
+│       │   │   ├── F_distribution.py
+│       │   │   ├── laplace.py
+│       │   │   ├── dirichlet.py
+│       │   │   └── cauchy.py
+│       │   ├── 05_Joint_Distributions.py
+│       │   │   ├── joint_PMF_PDF.py
+│       │   │   ├── marginal_distributions.py
+│       │   │   ├── conditional_distributions.py
+│       │   │   ├── covariance_and_correlation.py
+│       │   │   ├── correlation_matrix.py
+│       │   │   └── copulas.py
+│       │   ├── 06_Transformations_of_RVs.py
+│       │   │   ├── change_of_variables.py
+│       │   │   ├── sums_of_random_variables.py
+│       │   │   └── order_statistics.py
+│       │   ├── 07_Concentration_Inequalities.py
+│       │   │   ├── markov_inequality.py
+│       │   │   ├── chebyshev_inequality.py
+│       │   │   ├── chernoff_bounds.py
+│       │   │   ├── hoeffding_inequality.py
+│       │   │   └── jensen_inequality.py
+│       │   ├── 08_Convergence_of_RVs.py
+│       │   │   ├── convergence_in_probability.py
+│       │   │   ├── convergence_in_distribution.py
+│       │   │   ├── almost_sure_convergence.py
+│       │   │   └── convergence_in_mean.py
+│       │   └── 09_Stochastic_Processes.py
+│       │       ├── markov_chains.py
+│       │       ├── stationary_distributions.py
+│       │       ├── poisson_processes.py
+│       │       ├── gaussian_processes.py
+│       │       ├── brownian_motion.py
+│       │       └── martingales.py
+│       │
+│       ├── 05_Information_Theory.py
+│       │   ├── 01_Entropy.py
+│       │   │   ├── shannon_entropy.py
+│       │   │   ├── joint_entropy.py
+│       │   │   ├── conditional_entropy.py
+│       │   │   └── differential_entropy.py
+│       │   ├── 02_Divergences_and_Distances.py
+│       │   │   ├── KL_divergence_deep_dive.py
+│       │   │   ├── cross_entropy.py
+│       │   │   ├── mutual_information.py
+│       │   │   ├── f_divergences.py
+│       │   │   └── wasserstein_earth_mover.py
+│       │   ├── 03_Coding_Theory_Basics.py
+│       │   │   ├── source_coding_theorem.py
+│       │   │   ├── channel_capacity.py
+│       │   │   └── noisy_channel_theorem.py
+│       │   ├── 04_MDL_and_Model_Selection.py
+│       │   │   ├── minimum_description_length.py
+│       │   │   ├── AIC_BIC.py
+│       │   │   └── occams_razor_formalized.py
+│       │   └── 05_Information_Theory_in_ML.py
+│       │       ├── maximum_entropy_principle.py
+│       │       ├── information_bottleneck.py
+│       │       └── rate_distortion_theory.py
+│       │
+│       ├── 06_Numerical_Methods.py
+│       │   ├── 01_Floating_Point_Arithmetic.py
+│       │   │   ├── IEEE_754_representation.py
+│       │   │   ├── machine_epsilon.py
+│       │   │   ├── rounding_errors.py
+│       │   │   └── catastrophic_cancellation.py
+│       │   ├── 02_Numerical_Linear_Algebra.py
+│       │   │   ├── condition_number.py
+│       │   │   ├── iterative_solvers.py
+│       │   │   │   ├── conjugate_gradient.py
+│       │   │   │   ├── GMRES.py
+│       │   │   │   └── jacobi_gauss_seidel.py
+│       │   │   ├── matrix_factorizations_numerical.py
+│       │   │   └── sparse_matrix_methods.py
+│       │   ├── 03_Root_Finding.py
+│       │   │   ├── bisection_method.py
+│       │   │   ├── newton_raphson.py
+│       │   │   ├── secant_method.py
+│       │   │   └── fixed_point_iteration.py
+│       │   ├── 04_Interpolation_and_Approximation.py
+│       │   │   ├── polynomial_interpolation.py
+│       │   │   ├── spline_interpolation.py
+│       │   │   ├── least_squares_approximation.py
+│       │   │   └── fourier_approximation.py
+│       │   ├── 05_Numerical_Integration.py
+│       │   │   ├── trapezoidal_rule.py
+│       │   │   ├── simpsons_rule.py
+│       │   │   ├── gaussian_quadrature.py
+│       │   │   └── monte_carlo_integration.py
+│       │   └── 06_Numerical_Stability_and_Conditioning.py
+│       │       ├── forward_backward_error.py
+│       │       ├── stability_of_algorithms.py
+│       │       └── pivoting_strategies.py
+│       │
+│       ├── 07_Graph_Theory_for_ML.py
+│       │   ├── 01_Graph_Fundamentals.py
+│       │   │   ├── directed_undirected_graphs.py
+│       │   │   ├── weighted_graphs.py
+│       │   │   ├── bipartite_graphs.py
+│       │   │   ├── graph_representations.py
+│       │   │   │   ├── adjacency_matrix.py
+│       │   │   │   ├── incidence_matrix.py
+│       │   │   │   └── edge_list.py
+│       │   │   └── graph_properties.py
+│       │   ├── 02_Spectral_Graph_Theory.py
+│       │   │   ├── graph_laplacian.py
+│       │   │   ├── normalized_laplacian.py
+│       │   │   ├── spectral_clustering.py
+│       │   │   └── graph_fourier_transform.py
+│       │   ├── 03_Random_Walks_and_Diffusion.py
+│       │   │   ├── random_walk_on_graphs.py
+│       │   │   ├── pagerank.py
+│       │   │   ├── diffusion_maps.py
+│       │   │   └── hitting_commute_times.py
+│       │   └── 04_Graph_Neural_Network_Math.py
+│       │       ├── message_passing.py
+│       │       ├── graph_convolution.py
+│       │       └── node_edge_aggregation.py
+│       │
+│       ├── 08_Functional_Analysis_for_ML.py
+│       │   ├── 01_Metric_and_Normed_Spaces.py
+│       │   │   ├── metric_spaces.py
+│       │   │   ├── normed_vector_spaces.py
+│       │   │   ├── banach_spaces.py
+│       │   │   └── hilbert_spaces.py
+│       │   ├── 02_Reproducing_Kernel_Hilbert_Spaces.py
+│       │   │   ├── kernel_functions.py
+│       │   │   ├── positive_semidefinite_kernels.py
+│       │   │   ├── RKHS_theory.py
+│       │   │   └── representer_theorem.py
+│       │   ├── 03_Kernels_for_ML.py
+│       │   │   ├── linear_polynomial_kernels.py
+│       │   │   ├── RBF_gaussian_kernel.py
+│       │   │   ├── matern_kernel.py
+│       │   │   ├── string_and_graph_kernels.py
+│       │   │   └── kernel_trick.py
+│       │   └── 04_Operator_Theory_Basics.py
+│       │       ├── linear_operators.py
+│       │       ├── bounded_operators.py
+│       │       └── compact_operators.py
+│       │
+│       ├── 09_Measure_Theory_Foundations.py
+│       │   ├── 01_Sets_and_Sigma_Algebras.py
+│       │   │   ├── sigma_algebras.py
+│       │   │   ├── borel_sets.py
+│       │   │   └── measurable_spaces.py
+│       │   ├── 02_Measures_and_Integration.py
+│       │   │   ├── measure_definition.py
+│       │   │   ├── lebesgue_measure.py
+│       │   │   ├── lebesgue_integral.py
+│       │   │   └── dominated_convergence.py
+│       │   ├── 03_Probability_Measure_Theory.py
+│       │   │   ├── probability_space.py
+│       │   │   ├── random_variables_as_measurable_functions.py
+│       │   │   ├── pushforward_measures.py
+│       │   │   └── radon_nikodym_theorem.py
+│       │   └── 04_Convergence_Theorems.py
+│       │       ├── monotone_convergence.py
+│       │       ├── fatous_lemma.py
+│       │       └── dominated_convergence_probabilistic.py
+│       │
+│       ├── 10_Optimization_Advanced.py
+│       │   ├── 01_Second_Order_Methods.py
+│       │   │   ├── newtons_method.py
+│       │   │   ├── quasi_newton_BFGS.py
+│       │   │   ├── L_BFGS.py
+│       │   │   └── natural_gradient.py
+│       │   ├── 02_Constrained_Optimization.py
+│       │   │   ├── linear_programming.py
+│       │   │   ├── quadratic_programming.py
+│       │   │   ├── semidefinite_programming.py
+│       │   │   └── integer_programming.py
+│       │   ├── 03_Non_Convex_Optimization.py
+│       │   │   ├── saddle_point_problems.py
+│       │   │   ├── landscape_of_neural_networks.py
+│       │   │   ├── escaping_local_minima.py
+│       │   │   └── loss_surface_geometry.py
+│       │   ├── 04_Stochastic_Optimization.py
+│       │   │   ├── variance_reduction.py
+│       │   │   │   ├── SVRG.py
+│       │   │   │   └── SAGA.py
+│       │   │   ├── zeroth_order_optimization.py
+│       │   │   └── evolutionary_strategies.py
+│       │   └── 05_Duality_Theory.py
+│       │       ├── lagrangian_duality.py
+│       │       ├── strong_weak_duality.py
+│       │       ├── slater_conditions.py
+│       │       └── dual_decomposition.py
+│       │
+│       ├── 11_Linear_Models_Math.py
+│       │   ├── 01_Geometry_of_Linear_Regression.py
+│       │   │   ├── projection_onto_column_space.py
+│       │   │   ├── hat_matrix.py
+│       │   │   └── orthogonal_projection.py
+│       │   ├── 02_Regularization_Theory.py
+│       │   │   ├── ridge_regression_math.py
+│       │   │   ├── lasso_and_sparsity.py
+│       │   │   ├── elastic_net.py
+│       │   │   └── tikhonov_regularization.py
+│       │   ├── 03_Generalization_Bounds.py
+│       │   │   ├── VC_dimension.py
+│       │   │   ├── rademacher_complexity.py
+│       │   │   ├── PAC_learning.py
+│       │   │   └── bias_variance_decomposition.py
+│       │   └── 04_SVM_Math.py
+│       │       ├── maximum_margin_classifier.py
+│       │       ├── soft_margin_SVM.py
+│       │       ├── dual_formulation.py
+│       │       └── kernel_SVM.py
+│       │
+│       ├── 12_Deep_Learning_Math.py
+│       │   ├── 01_Universal_Approximation.py
+│       │   │   ├── universal_approximation_theorem.py
+│       │   │   ├── depth_vs_width.py
+│       │   │   └── expressivity_of_networks.py
+│       │   ├── 02_Backpropagation_Math.py
+│       │   │   ├── computational_graphs.py
+│       │   │   ├── chain_rule_in_networks.py
+│       │   │   ├── gradient_flow_analysis.py
+│       │   │   └── second_order_backprop.py
+│       │   ├── 03_Initialization_Theory.py
+│       │   │   ├── glorot_initialization.py
+│       │   │   ├── he_initialization.py
+│       │   │   └── signal_propagation.py
+│       │   ├── 04_Normalization_Methods.py
+│       │   │   ├── batch_norm_math.py
+│       │   │   ├── layer_norm_math.py
+│       │   │   ├── group_norm.py
+│       │   │   └── spectral_normalization.py
+│       │   ├── 05_Attention_and_Transformers_Math.py
+│       │   │   ├── scaled_dot_product_attention.py
+│       │   │   ├── multi_head_attention.py
+│       │   │   ├── positional_encodings.py
+│       │   │   └── attention_as_soft_retrieval.py
+│       │   ├── 06_Convolutional_Network_Math.py
+│       │   │   ├── discrete_convolution.py
+│       │   │   ├── cross_correlation.py
+│       │   │   ├── fourier_perspective_on_convolution.py
+│       │   │   └── equivariance_and_symmetry.py
+│       │   └── 07_Loss_Functions_Math.py
+│       │       ├── MSE_and_MAE.py
+│       │       ├── cross_entropy_loss.py
+│       │       ├── hinge_loss.py
+│       │       ├── contrastive_loss.py
+│       │       ├── focal_loss.py
+│       │       └── ELBO_variational_loss.py
+│       │
+│       ├── 13_Probabilistic_Graphical_Models_Math.py
+│       │   ├── 01_Bayesian_Networks.py
+│       │   │   ├── conditional_independence.py
+│       │   │   ├── d_separation.py
+│       │   │   └── exact_inference.py
+│       │   ├── 02_Markov_Random_Fields.py
+│       │   │   ├── gibbs_distributions.py
+│       │   │   ├── clique_potentials.py
+│       │   │   └── partition_function.py
+│       │   ├── 03_Inference_Algorithms.py
+│       │   │   ├── belief_propagation.py
+│       │   │   ├── junction_tree.py
+│       │   │   ├── variational_inference_ELBO.py
+│       │   │   └── mean_field_approximation.py
+│       │   └── 04_Latent_Variable_Models.py
+│       │       ├── EM_algorithm.py
+│       │       ├── mixture_models.py
+│       │       ├── HMM_math.py
+│       │       └── gaussian_mixture_models.py
+│       │
+│       ├── 14_Sampling_Methods.py
+│       │   ├── 01_Monte_Carlo_Methods.py
+│       │   │   ├── importance_sampling.py
+│       │   │   ├── rejection_sampling.py
+│       │   │   └── stratified_sampling.py
+│       │   ├── 02_MCMC_Methods.py
+│       │   │   ├── metropolis_hastings.py
+│       │   │   ├── gibbs_sampling.py
+│       │   │   ├── hamiltonian_monte_carlo.py
+│       │   │   └── NUTS_sampler.py
+│       │   ├── 03_Variational_Methods.py
+│       │   │   ├── VI_fundamentals.py
+│       │   │   ├── ELBO_derivation.py
+│       │   │   ├── reparameterization_trick.py
+│       │   │   └── normalizing_flows_math.py
+│       │   └── 04_Sequential_Monte_Carlo.py
+│       │       ├── particle_filters.py
+│       │       └── sequential_importance_sampling.py
+│       │
+│       ├── 15_Dimensionality_Reduction_Math.py
+│       │   ├── 01_Linear_Methods.py
+│       │   │   ├── PCA_full_derivation.py
+│       │   │   ├── LDA_linear_discriminant.py
+│       │   │   ├── CCA_canonical_correlation.py
+│       │   │   └── random_projections_JL_lemma.py
+│       │   ├── 02_Manifold_Learning.py
+│       │   │   ├── manifold_hypothesis.py
+│       │   │   ├── isomap.py
+│       │   │   ├── locally_linear_embedding.py
+│       │   │   ├── UMAP_math.py
+│       │   │   └── tSNE_math.py
+│       │   └── 03_Autoencoders_and_VAEs.py
+│       │       ├── autoencoder_math.py
+│       │       ├── VAE_ELBO_derivation.py
+│       │       └── beta_VAE.py
+│       │
+│       └── 16_Fourier_and_Wavelet_Analysis.py
+│           ├── 01_Fourier_Analysis.py
+│           │   ├── fourier_series.py
+│           │   ├── discrete_fourier_transform.py
+│           │   ├── FFT_algorithm.py
+│           │   ├── convolution_theorem.py
+│           │   └── parseval_theorem.py
+│           ├── 02_Spectral_Analysis.py
+│           │   ├── power_spectral_density.py
+│           │   ├── windowing_functions.py
+│           │   └── STFT.py
+│           └── 03_Wavelets.py
+│               ├── continuous_wavelet_transform.py
+│               ├── discrete_wavelet_transform.py
+│               ├── multiresolution_analysis.py
+│               └── wavelets_in_deep_learning.py
+
+
+
+
++-----------------------------------+----------------------------------------------+
+| Module                            | Key Purpose                                  |
++-----------------------------------+----------------------------------------------+
+| 01 Linear Algebra                 | Core language of data and transformations    |
+| 02 Calculus & Optimization        | Gradient-based learning                      |
+| 03 Statistical Inference          | Learning from data rigorously                |
+| 04 Probability Theory             | Uncertainty modeling                         |
+| 05 Information Theory             | Entropy, divergences, loss functions         |
+| 06 Numerical Methods              | Stable computation                           |
+| 07 Graph Theory                   | GNNs, knowledge graphs                       |
+| 08 Functional Analysis            | Kernels, SVMs, GPs                           |
+| 09 Measure Theory                 | Rigorous probability foundations             |
+| 10 Advanced Optimization          | Beyond SGD                                   |
+| 11 Linear Models Math             | Geometry of regression/classification        |
+| 12 Deep Learning Math             | Backprop, attention, normalization           |
+| 13 Probabilistic Graphical Models | Bayesian networks, inference                 |
+| 14 Sampling Methods               | MCMC, variational inference                  |
+| 15 Dimensionality Reduction       | PCA, manifolds, VAEs                         |
+| 16 Fourier & Wavelets             | Signal processing for CNNs/audio             |
++-----------------------------------+----------------------------------------------+

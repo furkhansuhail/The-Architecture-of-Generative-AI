@@ -103,6 +103,86 @@ Example: X, Y ~ Bernoulli(½) independent; Z = X ⊕ Y.
   But {X,Y,Z} are not mutually independent: ℙ(X=Y=Z=1) = 0 ≠ ⅛.
 
 
+### Population vs Sample
+
+The POPULATION is the complete set of all possible observations of interest.
+The SAMPLE is a subset of the population actually observed.
+
+    Population:  all humans, all possible coin flips, all patients with a disease.
+    Sample:      the 500 people surveyed, the 200 coin flips recorded, n trial subjects.
+
+This distinction is fundamental: we observe samples but make inferences about populations.
+
+POPULATION PARAMETERS (fixed, unknown):   μ = 𝔼[X],  σ² = Var(X),  p = ℙ(X=1)
+SAMPLE STATISTICS (computed from data):   X̄ = (1/n)Σxᵢ,  S² = (1/(n-1))Σ(xᵢ−X̄)²
+
+The goal of statistical inference is to draw conclusions about population parameters
+from sample statistics. The quality of inference depends critically on:
+    · HOW the sample was drawn (random sampling avoids bias)
+    · HOW LARGE the sample is (larger n → more precise estimates via CLT)
+    · WHETHER the sample is representative (non-representative → systematic error)
+
+SAMPLING SCHEMES:
+    Simple random sampling:  each unit equally likely to be chosen.
+    Stratified sampling:     divide into strata, sample each proportionally.
+    Cluster sampling:        randomly select clusters, observe all units within.
+    Systematic sampling:     every kth unit from a list.
+
+SAMPLING BIAS: When the sample is not representative of the population.
+    Selection bias:      some units have zero probability of inclusion.
+    Non-response bias:   those who respond differ systematically from those who don't.
+    Survivorship bias:   only "survivors" (successful outcomes) are observed.
+
+
+### Descriptive Statistics
+
+Descriptive statistics summarise the key features of a sample.
+
+MEASURES OF LOCATION (central tendency):
+    Mean:   X̄ = (1/n) Σᵢ xᵢ           — minimises Σ(xᵢ − a)²
+    Median: middle value when sorted   — minimises Σ|xᵢ − a|; robust to outliers
+    Mode:   most frequent value        — maximises frequency (may not be unique)
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  Right-skewed distribution:  mean > median > mode        │
+    │  Left-skewed distribution:   mean < median < mode        │
+    │  Symmetric distribution:     mean = median = mode        │
+    └──────────────────────────────────────────────────────────┘
+
+MEASURES OF SPREAD:
+    Range:          max − min    (sensitive to outliers)
+    IQR:            Q3 − Q1     (robust: middle 50% of the data)
+    Variance:       S² = (1/(n-1)) Σ(xᵢ − X̄)²  (bessel's correction)
+    Std deviation:  S = √S²
+
+QUANTILES AND PERCENTILES:
+    The p-th QUANTILE (or 100p-th percentile) Qₚ is the value such that
+    approximately p·100% of the data falls at or below it.
+
+    Q₀.₂₅ = first quartile (Q1):   25% of data below
+    Q₀.₅₀ = second quartile (Q2):  50% of data below = MEDIAN
+    Q₀.₇₅ = third quartile (Q3):   75% of data below
+
+    IQR = Q3 − Q1  (interquartile range — robust spread measure)
+
+    BOXPLOT: summarises distribution as [min, Q1, median, Q3, max].
+    Outlier rule: points beyond Q1 − 1.5·IQR or Q3 + 1.5·IQR flagged.
+
+    For a continuous CDF F:   Qₚ = F⁻¹(p)    (quantile function = inverse CDF)
+    For Normal:   Q₀.₉₇₅ = μ + 1.96σ  (used in 95% confidence intervals)
+
+SHAPE:
+    SKEWNESS:   γ₁ = 𝔼[(X−μ)³]/σ³   (positive = right-tailed, negative = left-tailed)
+    KURTOSIS:   γ₂ = 𝔼[(X−μ)⁴]/σ⁴   (Gaussian = 3; excess kurtosis = γ₂ − 3)
+    Excess kurtosis > 0: heavier tails than Gaussian (leptokurtic — financial returns)
+    Excess kurtosis < 0: lighter tails (platykurtic)
+
+FIVE-NUMBER SUMMARY: (min, Q1, median, Q3, max) — compact distribution portrait.
+
+STANDARDISATION (z-score):  z = (x − X̄) / S
+Transforms data to zero mean and unit variance.  Allows comparison across scales.
+
+
 ### PART 2 — RANDOM VARIABLES & DISTRIBUTIONS
 
 ### Random Variables
@@ -592,6 +672,71 @@ Doubling the required effect size reduces n by a factor of 4.
 This is the fundamental cost of detecting small signals.
 
 
+### ANOVA — Analysis of Variance
+
+ANOVA tests whether k ≥ 2 group means are all equal:
+
+    H₀: μ₁ = μ₂ = ··· = μₖ    vs    H₁: at least one μᵢ differs
+
+IDEA: partition total variance into BETWEEN-group variance (signal)
+and WITHIN-group variance (noise); the ratio is an F statistic.
+
+ONE-WAY ANOVA MODEL:  Yᵢⱼ = μ + τᵢ + εᵢⱼ,   εᵢⱼ ~ N(0, σ²)
+
+    i = 1,...,k  (groups),  j = 1,...,nᵢ  (observations per group)
+    τᵢ  = group effect (treatment deviation from grand mean μ)
+    Constraint: Σᵢ nᵢτᵢ = 0
+
+SUM OF SQUARES DECOMPOSITION:
+
+    SS_Total = SS_Between + SS_Within
+
+    SS_Between = Σᵢ nᵢ (Ȳᵢ. − Ȳ..)²    df = k − 1       (signal)
+    SS_Within  = Σᵢ Σⱼ (Yᵢⱼ − Ȳᵢ.)²    df = N − k       (noise)
+    SS_Total   = Σᵢ Σⱼ (Yᵢⱼ − Ȳ..)²    df = N − 1
+
+    MS_Between = SS_Between / (k−1)       (mean squares)
+    MS_Within  = SS_Within  / (N−k)       (= pooled variance estimate)
+
+    F = MS_Between / MS_Within  ~  F(k−1, N−k)   under H₀
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  F >> 1: group means vary more than noise → reject H₀    │
+    │  F ≈ 1:  group variation explained by noise → retain H₀  │
+    └──────────────────────────────────────────────────────────┘
+
+ANOVA ASSUMPTIONS:
+    1. Independence: observations within and between groups are independent.
+    2. Normality: residuals εᵢⱼ ~ N(0, σ²)  (robust to moderate violations).
+    3. Homoscedasticity (equal variance): σᵢ² = σ² for all groups.
+       Test: Levene's test or Bartlett's test.
+
+POST-HOC TESTS: ANOVA rejects H₀ but doesn't identify which pairs differ.
+    Tukey's HSD: controls FWER; pairwise comparisons of all k(k-1)/2 pairs.
+    Bonferroni: conservative; adjusts α for the number of comparisons.
+    Dunnett's:  compare each treatment group to one control group.
+
+TWO-WAY ANOVA: Two factors A (levels a) and B (levels b):
+
+    Yᵢⱼₖ = μ + αᵢ + βⱼ + (αβ)ᵢⱼ + εᵢⱼₖ
+
+    Tests three hypotheses simultaneously:
+    · Main effect of A:    H₀: all αᵢ = 0
+    · Main effect of B:    H₀: all βⱼ = 0
+    · Interaction A×B:     H₀: all (αβ)ᵢⱼ = 0
+
+    An INTERACTION means the effect of A depends on the level of B —
+    the two factors are not additive.
+
+KRUSKAL-WALLIS TEST: Non-parametric analogue of one-way ANOVA.
+Ranks all observations, tests whether the rank distributions differ
+across groups. No normality assumption required.
+
+ML relevance: ANOVA underlies F-tests in linear regression (testing whether
+any predictors explain variance), experimental design for A/B tests, and
+random effects models used in mixed-effects neural networks.
+
+
 ### Multiple Testing
 
 If we run m independent tests at level α each:
@@ -668,6 +813,109 @@ of the bootstrap distribution — recommended in practice.
     │  Fails for non-smooth statistics like the maximum,       │
     │  or when the empirical distribution is a poor proxy.     │
     └──────────────────────────────────────────────────────────┘
+
+
+### Jackknife
+
+The JACKKNIFE estimates bias and variance of an estimator by
+systematically leaving out one observation at a time.
+
+LEAVE-ONE-OUT JACKKNIFE:
+    1. Compute θ̂ on the full sample of n observations.
+    2. For i = 1,...,n: compute θ̂₍₋ᵢ₎ on the sample with observation i removed.
+    3. The jackknife estimates are:
+
+        Pseudo-values:  θ̃ᵢ = n·θ̂ − (n−1)·θ̂₍₋ᵢ₎
+
+        Jackknife estimate:   θ̂_JK = (1/n) Σᵢ θ̃ᵢ
+
+        Bias estimate:  Bias_JK = (n−1)(θ̂₍.₎ − θ̂)   where θ̂₍.₎ = (1/n)Σᵢ θ̂₍₋ᵢ₎
+
+        Variance estimate: Var_JK = [(n−1)/n] Σᵢ (θ̂₍₋ᵢ₎ − θ̂₍.₎)²
+
+    The factor (n−1) instead of (1/n) appears because removing one
+    observation from n only slightly perturbs the estimator.
+
+COMPARISON WITH BOOTSTRAP:
+    · Jackknife: deterministic (no resampling randomness), O(n) refits.
+    · Bootstrap: stochastic (random draws), O(B) refits with B typically 1000–5000.
+    · Jackknife fails for non-smooth statistics (e.g., sample median, max).
+    · Bootstrap is more flexible but computationally heavier.
+
+DELETE-d JACKKNIFE: Remove d > 1 observations; better for estimating
+bias of estimators that converge at rate n^{-1/2}.
+
+
+### Cross-Validation
+
+CROSS-VALIDATION (CV) estimates the generalisation error of a model —
+how well it predicts on new data not seen during training.
+
+K-FOLD CROSS-VALIDATION:
+    1. Partition the n observations into K roughly equal folds.
+    2. For fold k = 1,...,K:
+       Train on all folds except k; evaluate error on fold k.
+    3. CV estimate:  CV(K) = (1/K) Σₖ Error_k
+
+    K=5 or K=10 is standard in ML.
+
+LEAVE-ONE-OUT CV (LOOCV):  K = n.
+    Each fold contains exactly one observation.
+    LOOCV is nearly unbiased but has high variance (each training set
+    differs by only one point — estimates are highly correlated).
+    For linear models: LOOCV = (1/n) Σᵢ [(yᵢ − ŷᵢ) / (1 − hᵢᵢ)]²
+    where hᵢᵢ is the leverage — computable in closed form without refitting!
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  Bias-Variance of CV:                                    │
+    │  K=2: high bias (trains on only half the data)           │
+    │  LOOCV: low bias, high variance (correlated folds)       │
+    │  K=5,10: good bias-variance balance in practice          │
+    └──────────────────────────────────────────────────────────┘
+
+STRATIFIED K-FOLD: Preserves class proportions in each fold.
+Essential for imbalanced classification problems.
+
+TIME SERIES CV: Cannot shuffle — use expanding window or sliding window.
+    Expanding window:  train on [1..t], test on t+1; grow training set.
+    Sliding window:    train on [t-w..t], test on t+1; fixed window size.
+
+CV FOR MODEL SELECTION: Compare CV error across hyperparameter settings.
+The ONE-STANDARD-ERROR RULE: among models within 1 SE of the best CV error,
+choose the simplest (most regularised) — guards against overfitting the CV set.
+
+
+### Permutation Tests
+
+A PERMUTATION TEST (randomisation test) computes a p-value without
+distributional assumptions by simulating the null distribution directly.
+
+ALGORITHM:
+    1. Compute the observed test statistic T_obs from the data.
+    2. Under H₀ (no group difference), the group labels are exchangeable.
+    3. For b = 1,...,B: randomly permute the group labels; compute T_b*.
+    4. Permutation p-value:  p̂ = (1 + #{T_b* ≥ T_obs}) / (B + 1)
+
+    The exact p-value uses ALL n! permutations (feasible only for small n).
+    Monte Carlo permutation uses B random permutations (B ≥ 10,000 for accuracy).
+
+VALIDITY: Requires exchangeability under H₀ — that permuting labels
+produces equally likely datasets. This holds whenever observations are
+iid under H₀.
+
+COMPARISON WITH PARAMETRIC TESTS:
+    · No distributional assumptions (distribution-free).
+    · Valid for any test statistic, however exotic.
+    · Computationally expensive (B × model evaluations).
+    · Equivalent to t-test asymptotically for two-sample location problems.
+
+PERMUTATION TEST FOR CORRELATION:
+    H₀: X ⊥⊥ Y.  Permute Y values; recompute correlation each time.
+    Exact null distribution of r under independence.
+
+ML applications: testing whether a model's accuracy on a test set exceeds
+chance (permute labels, re-evaluate); feature importance tests (permute
+feature j, measure drop in performance).
 
 
 ### PART 8 — BAYESIAN INFERENCE
@@ -797,6 +1045,98 @@ HAMILTONIAN MONTE CARLO (HMC): Uses gradient ∇log π(θ|x) to propose
     └──────────────────────────────────────────────────────────┘
 
 
+### Hierarchical (Multi-Level) Models
+
+HIERARCHICAL MODELS allow parameters to vary across groups, with
+group-level parameters drawn from a shared HYPERPRIOR distribution.
+
+STRUCTURE (two-level example):
+
+    Hyperprior:   φ ~ p(φ)                    (hyperparameters)
+    Group prior:  θᵢ | φ ~ p(θᵢ | φ)          (group parameters)
+    Likelihood:   xᵢⱼ | θᵢ ~ p(xᵢⱼ | θᵢ)    (observations in group i)
+
+    i = 1,...,k groups;   j = 1,...,nᵢ observations per group.
+
+Example — school exam scores:
+    μᵢ | μ₀,τ² ~ N(μ₀, τ²)     (school mean drawn from population of schools)
+    xᵢⱼ | μᵢ,σ² ~ N(μᵢ, σ²)   (individual score within school i)
+    Priors on μ₀, τ², σ²       (hyperpriors)
+
+PARTIAL POOLING — the key insight:
+    · COMPLETE POOLING (one μ for all groups): ignores group structure.
+    · NO POOLING (separate μᵢ per group): ignores shared structure, overfits small groups.
+    · PARTIAL POOLING (hierarchical): each group estimate is SHRUNK toward the grand mean.
+
+    θ̂ᵢ_hierarchical ≈ wᵢ·θ̂ᵢ_MLE + (1−wᵢ)·θ̂_pooled
+
+    wᵢ = nᵢ/(nᵢ + σ²/τ²)   — weight on group-specific data vs. grand mean.
+    Small groups (nᵢ small) shrink toward the grand mean;
+    large groups stay near their own MLE.
+
+JAMES-STEIN ESTIMATOR: simultaneous estimation of k ≥ 3 means;
+total MSE is strictly lower with partial pooling than MLE — even when
+groups are completely unrelated. This was the first demonstration that
+inadmissibility of MLE in high dimensions.
+
+RANDOM EFFECTS vs FIXED EFFECTS:
+    Fixed effects: group parameters θᵢ are unknown constants (no distributional assumption).
+    Random effects: group parameters are drawn from a distribution (hierarchical Bayesian view).
+    Mixed effects: some predictors fixed (population-level), some random (group-level).
+
+ML relevance: Bayesian neural networks use hierarchical priors over weights.
+Meta-learning (learning to learn) is a hierarchical model over tasks.
+Multi-task learning shares information across tasks via a shared prior.
+
+
+### Variational Inference
+
+VARIATIONAL INFERENCE (VI) converts intractable posterior computation
+into an OPTIMISATION problem. Instead of sampling (MCMC), we find
+the distribution q(θ) in a tractable family Q that is closest to π(θ|x).
+
+ELBO (Evidence Lower BOund):
+
+    log p(x) = ELBO(q) + KL(q(θ) ‖ π(θ|x))
+
+    Since KL ≥ 0:   ELBO(q) ≤ log p(x)   (always a lower bound on evidence)
+
+    ELBO(q) = 𝔼_q[log p(x|θ)] − KL(q(θ) ‖ π(θ))
+                  └──────────────┘   └───────────────┘
+                  Reconstruction       Regularisation
+                  (fit to data)        (stay near prior)
+
+    Maximising ELBO ⟺ minimising KL(q ‖ π(·|x))
+
+MEAN-FIELD VI: Assume q factorises across coordinates:
+    q(θ) = Πᵢ qᵢ(θᵢ)    (independence approximation)
+
+    Optimal factor:   q*ᵢ(θᵢ) ∝ exp(𝔼_{q_{-i}}[log p(x, θ)])
+
+    COORDINATE ASCENT VI (CAVI): iteratively update each qᵢ while
+    holding the others fixed. Guaranteed to increase the ELBO at each step.
+
+VARIATIONAL AUTOENCODER (VAE):
+    Encoder q_φ(z|x) approximates the posterior over latent variables.
+    Decoder p_θ(x|z) models the likelihood.
+    ELBO:  𝔼_{q_φ}[log p_θ(x|z)] − KL(q_φ(z|x) ‖ p(z))
+
+    REPARAMETERISATION TRICK: z = μ_φ(x) + σ_φ(x)·ε, ε ~ N(0,I)
+    Moves the randomness out of the parameter path → enables backprop.
+
+STOCHASTIC VI: Use mini-batches and Monte Carlo to estimate the ELBO gradient.
+    ∇_φ ELBO ≈ (n/|B|) Σ_{x∈B} ∇_φ 𝔼_q[log p(x|θ)] − ∇_φ KL(q ‖ π)
+
+    Scales to large datasets; used in deep latent variable models.
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  VI vs MCMC:                                             │
+    │  VI: faster, scalable, biased (approximate posterior)    │
+    │  MCMC: asymptotically exact, slow, harder to scale       │
+    │  In practice: VI for large data; MCMC for gold standard  │
+    └──────────────────────────────────────────────────────────┘
+
+
 ### PART 9 — INFORMATION THEORY & KL DIVERGENCE
 
 ### Shannon Entropy
@@ -863,6 +1203,112 @@ CROSS-ENTROPY LOSS in classification:
     H(p, q) = −Σₓ p(x) log q(x) = H(p) + D_KL(p ‖ q)
 
 Since H(p) is constant w.r.t. q, minimising cross-entropy = minimising KL.
+
+
+### Jensen-Shannon Divergence
+
+The JS DIVERGENCE symmetrises KL divergence using a mixture distribution:
+
+    M = ½p + ½q    (midpoint mixture)
+
+    JS(p ‖ q) = ½ D_KL(p ‖ M) + ½ D_KL(q ‖ M)
+
+Properties:
+    · SYMMETRIC:       JS(p ‖ q) = JS(q ‖ p)
+    · BOUNDED:         0 ≤ JS(p ‖ q) ≤ log 2  (in nats; or ≤ 1 in bits)
+    · WELL-DEFINED even when p and q have non-overlapping support
+      (unlike KL which blows up to ∞ when q(x)=0 and p(x)>0)
+
+    JS-DISTANCE:  √JS(p ‖ q)   is a proper metric (satisfies triangle inequality).
+
+For two Gaussians N(μ₁,σ²) and N(μ₂,σ²) with equal variance:
+    JS → log 2 as |μ₁−μ₂| → ∞   (saturates — bounded unlike KL)
+    JS → 0 as μ₁ → μ₂
+
+ML relevance: The original GAN objective (Goodfellow et al. 2014) minimises
+JS divergence between the data distribution and the generator distribution.
+The discriminator at optimality yields: V(D*,G) = 2·JS(p_data ‖ p_G) − log 4.
+The vanishing gradient problem in GANs arises because JS saturates to log 2
+when distributions have disjoint support — motivating Wasserstein GANs.
+
+
+### Total Variation Distance
+
+The TOTAL VARIATION (TV) distance between distributions p and q:
+
+    TV(p, q) = ½ ‖p − q‖₁ = ½ Σₓ |p(x) − q(x)|     (discrete)
+             = ½ ∫ |p(x) − q(x)| dx                    (continuous)
+
+    = sup_{A} |ℙ_p(A) − ℙ_q(A)|    (supremum over all measurable sets)
+
+Properties:
+    · SYMMETRIC:  TV(p,q) = TV(q,p)
+    · BOUNDED:    0 ≤ TV(p,q) ≤ 1
+    · METRIC:     satisfies triangle inequality
+    · TV(p,q) = 0 iff p = q;   TV(p,q) = 1 iff supports are disjoint
+
+COUPLING INTERPRETATION:
+    TV(p,q) = min_{(X,Y): X~p, Y~q} ℙ(X ≠ Y)
+    (optimal coupling minimises probability of disagreement)
+
+RELATIONSHIP TO OTHER DIVERGENCES:
+    TV(p,q)² ≤ ½ D_KL(p ‖ q)                (Pinsker's inequality)
+    2·TV(p,q)² ≤ JS(p ‖ q) ≤ TV(p,q)²/(log 2)
+
+ML relevance: TV distance measures how distinguishable two distributions
+are from a single sample. Used in differential privacy (ε, δ-DP bounds),
+hypothesis testing, and Markov chain mixing analysis (mixing time =
+iterations for TV(πₜ, π*) < ε).
+
+
+### Wasserstein Distance (Earth Mover's Distance)
+
+The WASSERSTEIN-p DISTANCE between distributions p and q over metric space (X, d):
+
+    Wₚ(p, q) = (inf_{γ ∈ Γ(p,q)} ∫ d(x,y)ᵖ dγ(x,y))^{1/p}
+
+where Γ(p,q) is the set of all JOINT DISTRIBUTIONS (couplings) with
+marginals p and q.
+
+    EARTH MOVER'S DISTANCE = W₁(p, q) =  inf_{γ: X~p, Y~q} 𝔼[d(X,Y)]
+    Minimum cost to transport mass from distribution p to distribution q.
+
+KANTOROVICH-RUBINSTEIN DUAL FORM (for W₁):
+
+    W₁(p, q) = sup_{f: Lip(f)≤1} |𝔼_p[f(X)] − 𝔼_q[f(X)]|
+
+where Lip(f) ≤ 1 means f is 1-Lipschitz: |f(x)−f(y)| ≤ d(x,y).
+This is the form used in Wasserstein GAN (WGAN): the discriminator
+approximates the 1-Lipschitz function; enforced via weight clipping
+or gradient penalty (WGAN-GP).
+
+Properties:
+    · METRIC: satisfies triangle inequality
+    · GEOMETRICALLY SENSITIVE: accounts for the metric structure of X
+      (unlike KL and TV, which treat all mismatches equally regardless of distance)
+    · W₂ is the natural metric for Gaussian distributions:
+      W₂(N(μ₁,Σ₁), N(μ₂,Σ₂))² = ‖μ₁−μ₂‖² + Tr(Σ₁+Σ₂ − 2(Σ₁½Σ₂Σ₁½)½)
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  WHY WASSERSTEIN > KL/TV FOR GENERATIVE MODELS:          │
+    │  KL and TV blow up or saturate when supports are disjoint │
+    │  (early training when generator and data far apart).      │
+    │  Wasserstein provides a smooth gradient everywhere —      │
+    │  even when distributions don't overlap — enabling stable  │
+    │  GAN training without mode collapse.                      │
+    └──────────────────────────────────────────────────────────┘
+
+COMPARISON OF STATISTICAL DISTANCES:
+
+    ┌──────────────────┬───────────┬──────────┬──────────┬──────────────┐
+    │                  │  KL(p‖q)  │   JS     │    TV    │  Wasserstein │
+    ├──────────────────┼───────────┼──────────┼──────────┼──────────────┤
+    │ Symmetric        │    NO     │   YES    │   YES    │     YES      │
+    │ Bounded          │    NO     │   YES    │   YES    │      NO      │
+    │ Metric           │    NO     │  YES(√)  │   YES    │     YES      │
+    │ Disjoint support │    ∞      │  log 2   │    1     │  continuous  │
+    │ Geometry-aware   │    NO     │    NO    │    NO    │     YES      │
+    └──────────────────┴───────────┴──────────┴──────────┴──────────────┘
 
 
 ### PART 10 — ASYMPTOTICS & CONSISTENCY
@@ -944,6 +1390,238 @@ WILKS' THEOREM: For testing H₀: θ = θ₀ vs H₁: θ ≠ θ₀ using the
     │  The two frameworks AGREE asymptotically.                    │
     │  Differences matter most with small data or strong priors.   │
     └──────────────────────────────────────────────────────────────┘
+
+
+### PART 11 — REGRESSION ANALYSIS
+
+### Simple Linear Regression
+
+MODEL:  Yᵢ = β₀ + β₁xᵢ + εᵢ,   εᵢ ~ iid N(0, σ²)
+
+    β₀ = intercept,  β₁ = slope,  xᵢ = fixed predictor values,  εᵢ = error.
+
+OLS ESTIMATORS (minimise Σᵢ (Yᵢ − β̂₀ − β̂₁xᵢ)²):
+
+    β̂₁ = Σᵢ(xᵢ − x̄)(Yᵢ − Ȳ) / Σᵢ(xᵢ − x̄)²  =  Sxy / Sxx
+    β̂₀ = Ȳ − β̂₁ x̄
+
+    Equivalently:  β̂₁ = r · (Sᵧ / Sₓ)   where r = sample correlation,
+                                           Sᵧ = SD(Y), Sₓ = SD(x).
+
+SAMPLING DISTRIBUTIONS (under Normal errors):
+
+    β̂₁ ~ N(β₁,  σ²/Sxx)             (exact)
+    β̂₀ ~ N(β₀,  σ²(1/n + x̄²/Sxx))
+    (β̂₁ − β₁) / (S/√Sxx) ~ t(n−2)   (S² = Σê²ᵢ/(n−2) = residual variance estimate)
+
+COEFFICIENT OF DETERMINATION:
+    R² = 1 − SS_Res/SS_Total = r²   (proportion of variance explained)
+    R² ∈ [0,1];  R² = 0 means β₁ = 0; R² = 1 means perfect fit.
+
+PREDICTION INTERVAL for a new Y at x* (wider than CI for mean):
+    ŷ* ± t_{α/2,n-2} · S · √(1 + 1/n + (x*−x̄)²/Sxx)
+
+
+### Multiple Linear Regression
+
+MODEL:  Y = Xβ + ε,   ε ~ N(0, σ²I)
+
+    Y ∈ ℝⁿ (response vector),   X ∈ ℝ^{n×p} (design matrix with n obs, p−1 predictors + intercept),
+    β ∈ ℝᵖ (coefficient vector),   ε ∈ ℝⁿ (error vector).
+
+OLS ESTIMATOR:  β̂ = (XᵀX)⁻¹Xᵀy   (requires XᵀX invertible, i.e., no exact collinearity)
+
+    Fitted values:   ŷ = Xβ̂ = Hy,    H = X(XᵀX)⁻¹Xᵀ   (HAT MATRIX)
+    Residuals:       ê = y − ŷ = (I−H)y
+    Residual variance: S² = ‖ê‖²/(n−p)
+
+GAUSS-MARKOV THEOREM: Among all LINEAR UNBIASED estimators, OLS has
+minimum variance (BLUE = Best Linear Unbiased Estimator) when:
+    · Errors have zero mean: 𝔼[εᵢ] = 0
+    · Errors are homoscedastic: Var(εᵢ) = σ² (constant)
+    · Errors are uncorrelated: Cov(εᵢ, εⱼ) = 0 for i ≠ j
+    (Normality is NOT required for this result.)
+
+MULTICOLLINEARITY: When predictors are highly correlated:
+    · (XᵀX) is nearly singular → huge variance in β̂
+    · VIF (Variance Inflation Factor) for predictor j:
+      VIF_j = 1/(1 − R²_j),  where R²_j = R² from regressing xⱼ on all others.
+      VIF > 10 signals problematic collinearity.
+
+F-TEST FOR OVERALL REGRESSION (H₀: β₁=···=βₚ₋₁=0):
+
+    F = (R²/(p−1)) / ((1−R²)/(n−p))  ~  F(p−1, n−p)   under H₀
+
+
+### Ordinary Least Squares — Geometric View
+
+OLS finds the orthogonal projection of y onto the column space of X.
+
+    ŷ = Hy is the projection of y onto col(X).
+    ê = (I−H)y is the residual, perpendicular to col(X): Xᵀê = 0.
+
+    Diagram — Geometry of OLS:
+
+        y  •                    (response vector)
+            \   ↖ ê ⊥ col(X)
+             \
+         ŷ = Hy  •──────── col(X)
+
+HAT MATRIX PROPERTIES:
+    H = Hᵀ,  H² = H  (idempotent),  HX = X
+    (I−H) is also idempotent and symmetric.
+    hᵢᵢ = leverage of observation i (hᵢᵢ = xᵢᵀ(XᵀX)⁻¹xᵢ)
+    High leverage: observation has unusual predictor values.
+
+PARTITIONED REGRESSION (Frisch-Waugh):
+    Regressing y on [X₁, X₂] gives β̂₂ = (M₁X₂)⁻¹M₁y
+    where M₁ = I − X₁(X₁ᵀX₁)⁻¹X₁ᵀ is the residual maker for X₁.
+    Coefficient β̂₂ = effect of X₂ AFTER partialling out X₁.
+
+
+### Ridge, Lasso, and Elastic Net
+
+Standard OLS can overfit when p is large or predictors are correlated.
+REGULARISATION adds a penalty on β to shrink estimates.
+
+RIDGE REGRESSION (L₂ penalty):
+
+    β̂_ridge = argmin_β ‖y − Xβ‖² + λ‖β‖²  =  (XᵀX + λI)⁻¹Xᵀy
+
+    · Shrinks all coefficients toward zero uniformly.
+    · (XᵀX + λI) is always invertible — fixes multicollinearity.
+    · No exact zeros: keeps all predictors.
+    · Bayesian interpretation: Normal prior β ~ N(0, σ²/λ · I).
+
+LASSO (L₁ penalty — Least Absolute Shrinkage and Selection Operator):
+
+    β̂_lasso = argmin_β ‖y − Xβ‖² + λ‖β‖₁
+
+    · Produces SPARSE solutions (exact zeros) — automatic variable selection.
+    · Bayesian interpretation: Laplace prior β ~ Laplace(0, σ²/λ).
+    · Not differentiable at zero: requires proximal gradient (soft thresholding).
+    · SOFT THRESHOLDING:  β̂_lasso_j = sign(β̂_OLS_j) · max(|β̂_OLS_j| − λ, 0)
+      (in the orthonormal design case X = I)
+
+    ┌──────────────────────────────────────────────────────────┐
+    │  LASSO vs RIDGE geometry:                                │
+    │  Ridge constraint: ‖β‖² ≤ t²  (ball — smooth boundary)  │
+    │  Lasso constraint: ‖β‖₁ ≤ t  (diamond — corners → zeros) │
+    │  The OLS ellipse hits the Lasso diamond at a corner,     │
+    │  setting that coefficient exactly to zero.               │
+    └──────────────────────────────────────────────────────────┘
+
+ELASTIC NET:  λ₁‖β‖₁ + λ₂‖β‖²   (convex combination of L₁ and L₂)
+    Selects variables (Lasso) while handling correlated groups (Ridge).
+    Encourages grouped selection: correlated predictors enter together.
+
+CHOOSING λ: CROSS-VALIDATION (see Part 7).
+    Plot validation error vs. log(λ); select λ at the minimum or
+    using the one-standard-error rule (largest λ within 1 SE of minimum).
+
+
+### Logistic Regression (Statistical Perspective)
+
+BINARY LOGISTIC REGRESSION: Model ℙ(Y=1|x) directly.
+
+    log[p(x)/(1−p(x))] = β₀ + β₁x₁ + ··· + βₚxₚ    (log-odds = linear in x)
+
+    p(x) = σ(βᵀx) = 1/(1 + e^{−βᵀx})   (σ = sigmoid function)
+
+LIKELIHOOD:  L(β) = Πᵢ p(xᵢ)^{yᵢ} (1−p(xᵢ))^{1−yᵢ}
+
+LOG-LIKELIHOOD:  ℓ(β) = Σᵢ [yᵢ log p(xᵢ) + (1−yᵢ) log(1−p(xᵢ))]
+                       = − Σᵢ log(1 + e^{−yᵢ βᵀxᵢ})   (cross-entropy loss)
+
+MLE: No closed form — solved by iteratively reweighted least squares (IRLS)
+    or gradient ascent on ℓ(β).
+
+INTERPRETATION of coefficients:
+    eᵝʲ = ODDS RATIO for a one-unit increase in xⱼ (holding others fixed).
+    A unit increase in xⱼ multiplies the odds p/(1-p) by eᵝʲ.
+
+INFERENCE:
+    Wald test: β̂ⱼ / SE(β̂ⱼ) ~ N(0,1) asymptotically (from MLE normality).
+    Likelihood ratio test: 2[ℓ(β̂) − ℓ(β₀)] ~ Χ²(1) under H₀.
+    Score (Rao) test: based on ∂ℓ/∂β|_{β=β₀}.
+
+DEVIANCE:  D = −2ℓ(β̂)   (measures lack of fit; analogous to RSS in OLS)
+    Null deviance:     D₀ = −2ℓ(intercept-only model)
+    Residual deviance: D = −2ℓ(full model)
+    D₀ − D ~ Χ²(p) under H₀: all slopes = 0.
+
+
+### Generalised Linear Models (GLMs)
+
+GLMs extend linear regression to non-Normal responses via:
+
+    1. RANDOM COMPONENT:   Y ~ distribution from exponential family.
+    2. SYSTEMATIC COMPONENT:  linear predictor η = Xβ.
+    3. LINK FUNCTION:   g(μ) = η,  where μ = 𝔼[Y|x].
+
+    ┌───────────────────────────────────────────────────────────────┐
+    │ Distribution   │ Canonical link g(μ)  │ Common use            │
+    ├───────────────────────────────────────────────────────────────┤
+    │ Normal         │ Identity μ           │ Continuous Y          │
+    │ Bernoulli      │ Logit log(μ/(1-μ))   │ Binary Y              │
+    │ Poisson        │ Log log(μ)           │ Count data            │
+    │ Gamma          │ Inverse 1/μ          │ Positive continuous Y │
+    │ Neg. Binomial  │ Log log(μ)           │ Overdispersed counts  │
+    └───────────────────────────────────────────────────────────────┘
+
+CANONICAL LINK: the link that makes the score equations simplest
+(sufficient statistic for μ equals the linear predictor naturally).
+
+FITTING: MLE via IRLS (Iteratively Reweighted Least Squares):
+    Iteratively solve a weighted OLS problem:  β̂ ← (XᵀWX)⁻¹XᵀWz
+    where W = diag{(g'(μᵢ))² Var(Yᵢ)}⁻¹ and z = adjusted response.
+
+DEVIANCE for model comparison:
+    D = 2[ℓ_saturated − ℓ_model]
+    Comparing nested models: D₁ − D₂ ~ Χ²(p₂ − p₁) asymptotically.
+
+OVERDISPERSION: When Var(Y) > theoretical (e.g., Poisson variance = mean).
+    Use quasi-likelihood or Negative Binomial model.
+
+POISSON REGRESSION (log-linear model for counts):
+    log(μᵢ) = β₀ + β₁x₁ + ···    →    μᵢ = exp(βᵀxᵢ)
+    eᵝʲ = multiplicative change in expected count per unit increase in xⱼ.
+
+
+### Regression Diagnostics
+
+After fitting a regression model, verify that assumptions hold.
+
+RESIDUAL ANALYSIS:
+    Raw residuals:       êᵢ = yᵢ − ŷᵢ
+    Standardised:        rᵢ = êᵢ / (S√(1−hᵢᵢ))
+    Studentised:         tᵢ = êᵢ / (S₍₋ᵢ₎√(1−hᵢᵢ))   (S₍₋ᵢ₎ from leave-one-out fit)
+
+DIAGNOSTIC PLOTS:
+    1. Residuals vs Fitted:  check linearity and homoscedasticity.
+       Curved pattern → non-linearity; funnel pattern → heteroscedasticity.
+    2. Q-Q plot of residuals:  check normality.
+       Deviations in tails → non-Normal errors.
+    3. Scale-Location plot:  √|rᵢ| vs ŷᵢ; horizontal band = constant variance.
+    4. Residuals vs Leverage:  identify influential points.
+
+INFLUENCE MEASURES:
+    Leverage hᵢᵢ: unusual predictor values (high leverage ≠ high influence).
+    Cook's Distance:  Dᵢ = (β̂₍₋ᵢ₎ − β̂)ᵀ XᵀX (β̂₍₋ᵢ₎ − β̂) / (pS²)
+        Rule of thumb: Dᵢ > 4/n or Dᵢ > 1 warrants investigation.
+    DFFITS:  change in fitted value when observation i is removed.
+
+TESTS FOR ASSUMPTIONS:
+    Normality of residuals:   Shapiro-Wilk test,  Kolmogorov-Smirnov test.
+    Homoscedasticity:         Breusch-Pagan test,  White's test.
+    Autocorrelation (time series):  Durbin-Watson statistic.
+    Influential observations: Outlier test (Bonferroni-corrected t-test).
+
+REMEDIES FOR VIOLATIONS:
+    Non-linearity:      add polynomial terms, splines, or interactions.
+    Heteroscedasticity: transform Y (log, sqrt), use WLS, or robust SEs.
+    Non-normality:      use GLM with appropriate error distribution.
+    High leverage:      check for data entry errors; use robust regression.
 
 """
 
@@ -1725,6 +2403,559 @@ print("  Bootstrap: provides valid CIs for ANY smooth statistic without")
 print("             distributional assumptions on the estimator.")
 print("  KL divergence: D_KL(p‖q) ≠ D_KL(q‖p).  Forward KL (used in VI)")
 print("  is mean-seeking; reverse KL is mode-seeking.  Both ≥ 0.")
+''',
+    },
+
+    # ── 5 ─────────────────────────────────────────────────────────────────────
+    "5 · Regression Analysis — OLS, Ridge, Lasso & Diagnostics": {
+        "description": (
+            "Fit simple and multiple linear regression with OLS. Verify the "
+            "Gauss-Markov theorem empirically. Demonstrate Ridge and Lasso "
+            "regularisation paths and cross-validated lambda selection. "
+            "Fit logistic regression and a Poisson GLM. Run full regression "
+            "diagnostics: residual plots, Cook's distance, leverage, and "
+            "the ANOVA F-test."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+from scipy import stats
+
+np.random.seed(42)
+
+print("=" * 65)
+print("  REGRESSION ANALYSIS: OLS, RIDGE, LASSO & DIAGNOSTICS")
+print("=" * 65)
+print()
+
+# ── PART 1: Simple and Multiple OLS ───────────────────────────────────────
+print("  PART 1 — OLS: SIMPLE AND MULTIPLE LINEAR REGRESSION")
+print()
+
+n = 120
+X1 = np.random.normal(0, 1, n)
+X2 = X1 * 0.6 + np.random.normal(0, 0.8, n)   # correlated predictor
+eps = np.random.normal(0, 1.5, n)
+beta_true = np.array([2.0, 1.5, -0.8])         # intercept, b1, b2
+X_mat = np.column_stack([np.ones(n), X1, X2])
+Y = X_mat @ beta_true + eps
+
+# OLS: β̂ = (XᵀX)⁻¹Xᵀy
+XtX = X_mat.T @ X_mat
+beta_hat = np.linalg.solve(XtX, X_mat.T @ Y)
+Y_hat    = X_mat @ beta_hat
+residuals = Y - Y_hat
+s2 = (residuals @ residuals) / (n - 3)   # unbiased: df = n - p
+se_beta  = np.sqrt(np.diag(s2 * np.linalg.inv(XtX)))
+t_stats  = beta_hat / se_beta
+p_vals   = 2 * stats.t.sf(np.abs(t_stats), df=n-3)
+SS_res   = residuals @ residuals
+SS_tot   = ((Y - Y.mean()) ** 2).sum()
+R2       = 1 - SS_res / SS_tot
+adj_R2   = 1 - (1 - R2) * (n - 1) / (n - 3)
+
+print(f"  True β: {beta_true}")
+print(f"  n={n},  p=3 (intercept + 2 predictors)")
+print()
+print(f"  {'Coeff':>10} | {'Estimate':>10} | {'True':>8} | {'SE':>8} | {'t':>8} | {'p-value':>10}")
+print(f"  {'─'*62}")
+names = ["Intercept", "X1", "X2"]
+for name, bh, bt, se, t, pv in zip(names, beta_hat, beta_true, se_beta, t_stats, p_vals):
+    sig = "***" if pv < 0.001 else ("**" if pv < 0.01 else ("*" if pv < 0.05 else ""))
+    print(f"  {name:>10} | {bh:10.4f} | {bt:8.4f} | {se:8.4f} | {t:8.4f} | {pv:10.4f} {sig}")
+print()
+print(f"  R² = {R2:.4f},  Adj. R² = {adj_R2:.4f},  S = {np.sqrt(s2):.4f}")
+
+# F-test for overall regression
+F_stat = (R2 / 2) / ((1 - R2) / (n - 3))
+F_pval = stats.f.sf(F_stat, 2, n - 3)
+print(f"  F({2},{n-3}) = {F_stat:.4f},  p = {F_pval:.2e}")
+print()
+
+# Hat matrix and leverage
+H = X_mat @ np.linalg.inv(XtX) @ X_mat.T
+leverage = np.diag(H)
+print(f"  Leverage: mean = {leverage.mean():.4f} (= p/n = {3/n:.4f}), max = {leverage.max():.4f}")
+
+# Cook's distance
+cook_d = (residuals**2 * leverage) / (3 * s2 * (1 - leverage)**2)
+n_influential = (cook_d > 4/n).sum()
+print(f"  Cook's D > 4/n: {n_influential} observations flagged as influential")
+print()
+
+# ── PART 2: Ridge and Lasso regularisation paths ──────────────────────────
+print("  PART 2 — RIDGE AND LASSO REGULARISATION PATHS")
+print()
+
+# Generate high-dimensional data (p > n scenario)
+n2, p2 = 80, 40
+beta_sparse = np.zeros(p2)
+beta_sparse[:5] = [3.0, -2.5, 2.0, -1.5, 1.0]   # only 5 true predictors
+X2_mat = np.random.normal(0, 1, (n2, p2))
+Y2     = X2_mat @ beta_sparse + np.random.normal(0, 1, n2)
+
+lambdas = np.logspace(-3, 2, 60)
+
+# Ridge: β̂_ridge = (XᵀX + λI)⁻¹Xᵀy
+ridge_paths = []
+for lam in lambdas:
+    b = np.linalg.solve(X2_mat.T @ X2_mat + lam * np.eye(p2), X2_mat.T @ Y2)
+    ridge_paths.append(b)
+ridge_paths = np.array(ridge_paths)
+
+# Lasso via coordinate descent (soft thresholding)
+def lasso_cd(X, y, lam, max_iter=500, tol=1e-6):
+    n_, p_ = X.shape
+    b = np.zeros(p_)
+    Xty = X.T @ y
+    XtX_diag = (X**2).sum(axis=0)
+    for _ in range(max_iter):
+        b_old = b.copy()
+        for j in range(p_):
+            r_j = y - X @ b + X[:, j] * b[j]
+            z_j = X[:, j] @ r_j
+            b[j] = np.sign(z_j) * max(abs(z_j) - lam, 0) / XtX_diag[j]
+        if np.max(np.abs(b - b_old)) < tol:
+            break
+    return b
+
+lasso_paths = np.array([lasso_cd(X2_mat, Y2, lam) for lam in lambdas])
+
+# 5-fold CV for Lasso lambda selection
+from numpy.random import default_rng
+rng2 = default_rng(0)
+fold_idx = rng2.permutation(n2) % 5
+cv_errors = []
+for lam in lambdas:
+    fold_mse = []
+    for k in range(5):
+        mask = fold_idx == k
+        b_cv = lasso_cd(X2_mat[~mask], Y2[~mask], lam)
+        fold_mse.append(((Y2[mask] - X2_mat[mask] @ b_cv)**2).mean())
+    cv_errors.append(np.mean(fold_mse))
+cv_errors = np.array(cv_errors)
+best_lam  = lambdas[np.argmin(cv_errors)]
+
+n_nonzero_best = (np.abs(lasso_cd(X2_mat, Y2, best_lam)) > 1e-6).sum()
+print(f"  Lasso CV-selected λ = {best_lam:.4f}")
+print(f"  Non-zero coefficients at best λ: {n_nonzero_best}  (true: 5)")
+print()
+
+# Coefficient recovery comparison
+b_ols   = np.linalg.lstsq(X2_mat, Y2, rcond=None)[0]
+b_ridge = np.linalg.solve(X2_mat.T @ X2_mat + best_lam * np.eye(p2), X2_mat.T @ Y2)
+b_lasso = lasso_cd(X2_mat, Y2, best_lam)
+
+print(f"  First 10 coefficients (true, OLS, Ridge, Lasso):")
+print(f"  {'j':>4} | {'True':>8} | {'OLS':>10} | {'Ridge':>10} | {'Lasso':>10}")
+print(f"  {'─'*48}")
+for j in range(10):
+    print(f"  {j:>4} | {beta_sparse[j]:8.3f} | {b_ols[j]:10.4f} | {b_ridge[j]:10.4f} | {b_lasso[j]:10.4f}")
+print()
+mse = lambda b: np.mean((b - beta_sparse)**2)
+print(f"  MSE vs true β:  OLS={mse(b_ols):.4f}, Ridge={mse(b_ridge):.4f}, Lasso={mse(b_lasso):.4f}")
+print()
+
+# ── PART 3: Logistic Regression and Poisson GLM ───────────────────────────
+print("  PART 3 — LOGISTIC REGRESSION & POISSON GLM")
+print()
+
+# --- Logistic regression (gradient ascent on log-likelihood) ---
+n3 = 200
+x_log = np.random.normal(0, 1, n3)
+log_odds = 0.8 + 1.5 * x_log
+p_log    = 1 / (1 + np.exp(-log_odds))
+y_log    = (np.random.uniform(size=n3) < p_log).astype(float)
+
+def sigmoid(z): return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+
+def logistic_fit(X, y, max_iter=50):
+    from scipy.optimize import minimize
+    def neg_ll(b):
+        p = sigmoid(X @ b)
+        return -np.sum(y * np.log(p + 1e-15) + (1-y) * np.log(1-p+1e-15))
+    def grad(b):
+        p = sigmoid(X @ b)
+        return -(X.T @ (y - p))
+    res = minimize(neg_ll, np.zeros(X.shape[1]), jac=grad, method="L-BFGS-B",
+                   options={"maxiter": max_iter})
+    return res.x
+
+X_log = np.column_stack([np.ones(n3), x_log])
+b_log = logistic_fit(X_log, y_log)
+
+p_pred = sigmoid(X_log @ b_log)
+ll     = (y_log * np.log(p_pred + 1e-15) + (1-y_log)*np.log(1-p_pred+1e-15)).sum()
+acc    = ((p_pred > 0.5) == y_log).mean()
+print(f"  Logistic regression: β̂ = {b_log.round(4)},  true = [0.8, 1.5]")
+print(f"  Log-likelihood = {ll:.2f},  Accuracy = {acc:.3f}")
+print(f"  Odds ratio for x: e^β₁ = {np.exp(b_log[1]):.4f}  (true: {np.exp(1.5):.4f})")
+print()
+
+# --- Poisson GLM (log link) ---
+x_pois  = np.random.uniform(0, 3, n3)
+mu_pois = np.exp(0.5 + 0.7 * x_pois)
+y_pois  = np.random.poisson(mu_pois)
+
+def poisson_irls(X, y, n_iter=20):
+    b = np.zeros(X.shape[1])
+    for _ in range(n_iter):
+        mu = np.exp(X @ b)
+        W  = np.diag(mu)
+        z  = X @ b + (y - mu) / mu      # adjusted response
+        b  = np.linalg.solve(X.T @ W @ X, X.T @ W @ z)
+    return b
+
+X_pois  = np.column_stack([np.ones(n3), x_pois])
+b_pois  = poisson_irls(X_pois, y_pois)
+mu_fit  = np.exp(X_pois @ b_pois)
+dev_res = 2 * (y_pois * np.log((y_pois + 1e-10) / mu_fit) - (y_pois - mu_fit)).sum()
+print(f"  Poisson GLM: β̂ = {b_pois.round(4)},  true = [0.5, 0.7]")
+print(f"  Residual deviance = {dev_res:.2f}  (df = {n3-2})")
+print(f"  e^β₁ = {np.exp(b_pois[1]):.4f}: each unit increase multiplies count by {np.exp(b_pois[1]):.3f}")
+print()
+
+# ── Plots ──────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+fig.suptitle("Regression: OLS Diagnostics, Regularisation Paths & GLMs",
+             fontsize=11, fontweight="bold")
+
+# Plot 1: Residuals vs Fitted + Cook's distance
+axes[0].scatter(Y_hat, residuals, alpha=0.5, color="steelblue", s=20)
+axes[0].axhline(0, color="k", lw=1, linestyle="--")
+top_cook = np.argsort(cook_d)[-5:]
+axes[0].scatter(Y_hat[top_cook], residuals[top_cook], color="tomato", s=60,
+                zorder=5, label="High Cook's D")
+axes[0].set_xlabel("Fitted values"); axes[0].set_ylabel("Residuals")
+axes[0].set_title("Residuals vs Fitted\\n(red = high Cook's D)")
+axes[0].legend(fontsize=8); axes[0].grid(alpha=0.3)
+
+# Plot 2: Ridge and Lasso coefficient paths
+l2_norms = np.abs(ridge_paths).sum(axis=1)
+l2_norms /= l2_norms.max()
+for j in range(5):
+    axes[1].plot(l2_norms, ridge_paths[:, j], lw=2, label=f"β{j}(true={beta_sparse[j]:.1f})")
+for j in range(5, min(8, p2)):
+    axes[1].plot(l2_norms, ridge_paths[:, j], lw=1, color="gray", alpha=0.4)
+axes[1].axhline(0, color="k", lw=0.5)
+axes[1].set_xlabel("L2 norm fraction"); axes[1].set_ylabel("Coefficient")
+axes[1].set_title("Ridge Coefficient Paths\\n(coloured = true non-zero)")
+axes[1].legend(fontsize=7); axes[1].grid(alpha=0.3)
+
+# Plot 3: Lasso CV curve
+axes[2].semilogx(lambdas, cv_errors, "steelblue", lw=2)
+axes[2].axvline(best_lam, color="tomato", lw=2, linestyle="--",
+                label=f"Best λ={best_lam:.3f}")
+axes[2].set_xlabel("λ (log scale)"); axes[2].set_ylabel("CV MSE")
+axes[2].set_title("Lasso 5-Fold CV\\nCV error vs regularisation")
+axes[2].legend(fontsize=9); axes[2].grid(alpha=0.3)
+
+# Plot 4: Logistic regression sigmoid fit
+x_range = np.linspace(-3.5, 3.5, 200)
+y_range  = sigmoid(b_log[0] + b_log[1] * x_range)
+axes[3].scatter(x_log, y_log + np.random.uniform(-0.04, 0.04, n3),
+                alpha=0.3, s=12, color="steelblue")
+axes[3].plot(x_range, y_range, "tomato", lw=2.5, label="Fitted sigmoid")
+axes[3].plot(x_range, sigmoid(0.8 + 1.5 * x_range), "k--", lw=1.5,
+             alpha=0.6, label="True sigmoid")
+axes[3].set_xlabel("x"); axes[3].set_ylabel("P(Y=1|x)")
+axes[3].set_title("Logistic Regression\\nFitted vs true sigmoid")
+axes[3].legend(fontsize=9); axes[3].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "regression_analysis.png", dpi=120)
+print("  Plot saved → regression_analysis.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  OLS recovers true coefficients; SE shrinks as 1/sqrt(n).")
+print("  Ridge shrinks all coefficients smoothly; Lasso produces exact zeros.")
+print("  CV selects lambda; Lasso correctly identifies sparse truth.")
+print("  Logistic MLE = maximise cross-entropy; OR = exp(beta).")
+print("  Poisson IRLS: each IRLS step is a weighted OLS solve.")
+''',
+    },
+
+    # ── 6 ─────────────────────────────────────────────────────────────────────
+    "6 · Statistical Distances, Descriptive Stats & Resampling": {
+        "description": (
+            "Compute and compare KL, JS, Wasserstein and TV distances between "
+            "parametric distributions. Demonstrate the jackknife estimator for "
+            "bias and variance. Compare permutation test vs t-test for two "
+            "groups. Visualise statistical distance properties including "
+            "asymmetry, boundedness and behaviour with disjoint supports."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+from scipy import stats
+
+np.random.seed(7)
+
+print("=" * 65)
+print("  STATISTICAL DISTANCES, DESCRIPTIVE STATS & RESAMPLING")
+print("=" * 65)
+print()
+
+# ── PART 1: Descriptive statistics and quantiles ──────────────────────────
+print("  PART 1 — DESCRIPTIVE STATISTICS & QUANTILES")
+print()
+
+distributions = {
+    "Normal(5,4)":   np.random.normal(5, 2, 1000),
+    "Right-skewed":  np.random.exponential(2, 1000) + 1,
+    "Bimodal":       np.concatenate([np.random.normal(2, 0.8, 500),
+                                      np.random.normal(7, 0.8, 500)]),
+}
+
+print(f"  {'Distribution':>18} | {'Mean':>7} | {'Median':>7} | {'Mode~':>7} | "
+      f"{'Std':>7} | {'Skew':>7} | {'Kurt':>7} | {'IQR':>7}")
+print(f"  {'─'*82}")
+
+for name, data in distributions.items():
+    mean   = data.mean()
+    median = np.median(data)
+    mode_  = data[np.argmax(np.histogram(data, bins=50)[0])]
+    std    = data.std()
+    skew   = stats.skew(data)
+    kurt   = stats.kurtosis(data)  # excess kurtosis (Normal = 0)
+    q1, q3 = np.percentile(data, [25, 75])
+    iqr    = q3 - q1
+    print(f"  {name:>18} | {mean:7.3f} | {median:7.3f} | {mode_:7.3f} | "
+          f"{std:7.3f} | {skew:7.3f} | {kurt:7.3f} | {iqr:7.3f}")
+
+print()
+print("  Right-skewed: mean > median > mode  (as predicted by theory).")
+print()
+
+# Quantile function demo
+print("  Quantile check on Normal(5,4): Q_0.025, Q_0.5, Q_0.975")
+data_n = distributions["Normal(5,4)"]
+qs     = np.percentile(data_n, [2.5, 50, 97.5])
+theory = stats.norm.ppf([0.025, 0.5, 0.975], loc=5, scale=2)
+print(f"  Empirical: {qs.round(4)}")
+print(f"  Theoretical: {theory.round(4)}")
+print()
+
+# ── PART 2: Statistical Distances ─────────────────────────────────────────
+print("  PART 2 — STATISTICAL DISTANCES (KL, JS, TV, WASSERSTEIN)")
+print()
+
+x_grid = np.linspace(-6, 12, 2000)
+dx     = x_grid[1] - x_grid[0]
+
+def kl_div(p, q, eps=1e-15):
+    p_ = np.maximum(p, eps); q_ = np.maximum(q, eps)
+    return np.sum(p_ * np.log(p_ / q_)) * dx
+
+def js_div(p, q):
+    m = 0.5 * (p + q)
+    return 0.5 * kl_div(p, m) + 0.5 * kl_div(q, m)
+
+def tv_dist(p, q):
+    return 0.5 * np.sum(np.abs(p - q)) * dx
+
+def wasserstein1(p, q):
+    cdf_p = np.cumsum(p) * dx
+    cdf_q = np.cumsum(q) * dx
+    return np.sum(np.abs(cdf_p - cdf_q)) * dx
+
+# Vary mean separation between two Gaussians with σ=1
+separations = [0.0, 0.5, 1.0, 2.0, 4.0, 8.0]
+mu_ref = 0.0; sigma = 1.0
+
+print(f"  Comparing N(0,1) vs N(δ,1) as δ increases:")
+print()
+print(f"  {'δ':>6} | {'KL(p‖q)':>10} | {'KL(q‖p)':>10} | {'JS':>10} | "
+      f"{'TV':>10} | {'W1':>10}")
+print(f"  {'─'*65}")
+
+for delta in separations:
+    p_pdf = stats.norm.pdf(x_grid, mu_ref, sigma)
+    q_pdf = stats.norm.pdf(x_grid, delta, sigma)
+    kl_fwd = kl_div(p_pdf, q_pdf)
+    kl_rev = kl_div(q_pdf, p_pdf)
+    js     = js_div(p_pdf, q_pdf)
+    tv     = tv_dist(p_pdf, q_pdf)
+    w1     = wasserstein1(p_pdf, q_pdf)
+    print(f"  {delta:>6.1f} | {kl_fwd:10.4f} | {kl_rev:10.4f} | {js:10.4f} | "
+          f"{tv:10.4f} | {w1:10.4f}")
+
+print()
+print("  KL is symmetric for equal-variance Gaussians (σ₁=σ₂).")
+print("  JS saturates at ln(2)=0.693; TV saturates at 1.0; W1 grows linearly.")
+print("  Wasserstein is the only distance that encodes geometry of the space.")
+print()
+
+# Near-disjoint support: compare distances
+print("  Near-disjoint supports — N(0,0.3) vs N(5,0.3):")
+p2 = stats.norm.pdf(x_grid, 0, 0.3)
+q2 = stats.norm.pdf(x_grid, 5, 0.3)
+p2 /= p2.sum() * dx; q2 /= q2.sum() * dx
+print(f"  KL = {kl_div(p2,q2):.2f} (huge), JS = {js_div(p2,q2):.4f} (~ln2={np.log(2):.4f}), "
+      f"TV = {tv_dist(p2,q2):.4f} (~1.0), W1 = {wasserstein1(p2,q2):.4f}")
+print()
+
+# ── PART 3: Jackknife ─────────────────────────────────────────────────────
+print("  PART 3 — JACKKNIFE BIAS AND VARIANCE ESTIMATION")
+print()
+
+n_jk = 50
+data_jk = np.random.exponential(2, n_jk)  # true mean=2, true var=4
+
+def jackknife(data, stat_fn):
+    n      = len(data)
+    theta  = stat_fn(data)
+    loo    = np.array([stat_fn(np.delete(data, i)) for i in range(n)])
+    theta_dot = loo.mean()
+    bias  = (n - 1) * (theta_dot - theta)
+    var   = ((n - 1) / n) * ((loo - theta_dot)**2).sum()
+    return theta, bias, var, loo
+
+stats_to_test = {
+    "Mean":     lambda d: d.mean(),
+    "Variance": lambda d: d.var(),
+    "Median":   lambda d: np.median(d),
+    "Skewness": lambda d: stats.skew(d),
+}
+
+true_vals = {"Mean": 2.0, "Variance": 4.0,
+             "Median": 2*np.log(2), "Skewness": 2.0}
+
+print(f"  Exponential(2) sample, n={n_jk}")
+print()
+print(f"  {'Statistic':>12} | {'Estimate':>10} | {'True':>8} | {'JK Bias':>10} | "
+      f"{'JK Var':>10} | {'JK SE':>8}")
+print(f"  {'─'*70}")
+for name, fn in stats_to_test.items():
+    theta, bias, var, _ = jackknife(data_jk, fn)
+    print(f"  {name:>12} | {theta:10.5f} | {true_vals[name]:8.5f} | "
+          f"{bias:10.6f} | {var:10.6f} | {np.sqrt(var):8.6f}")
+print()
+print("  Jackknife accurately estimates bias for smooth statistics (mean, var).")
+print("  Bias for median is near zero (median is a median, not a mean of smooth fn).")
+print()
+
+# ── PART 4: Permutation test vs t-test ────────────────────────────────────
+print("  PART 4 — PERMUTATION TEST vs t-TEST")
+print()
+
+# Two groups with varying effect sizes
+B_perm = 5000
+scenarios = [
+    ("Normal, δ=0.0",  np.random.normal(0,1,30), np.random.normal(0,1,30)),
+    ("Normal, δ=0.5",  np.random.normal(0,1,30), np.random.normal(0.5,1,30)),
+    ("Normal, δ=1.0",  np.random.normal(0,1,30), np.random.normal(1.0,1,30)),
+    ("Heavy-tail δ=1", stats.t.rvs(3,0,1,30),   stats.t.rvs(3,1,1,30)),
+]
+
+print(f"  {'Scenario':>20} | {'t-test p':>10} | {'Perm p':>10} | {'t-stat':>8} | {'Obs diff':>10}")
+print(f"  {'─'*65}")
+
+perm_pvals_all = {}
+for name, g1, g2 in scenarios:
+    combined = np.concatenate([g1, g2])
+    n1, n2   = len(g1), len(g2)
+    obs_diff = g1.mean() - g2.mean()
+    t_stat, t_pval = stats.ttest_ind(g1, g2)
+
+    # Permutation test
+    perm_diffs = np.array([
+        np.random.permutation(combined)[:n1].mean() -
+        np.random.permutation(combined)[n1:].mean()
+        for _ in range(B_perm)
+    ])
+    perm_p = (np.abs(perm_diffs) >= np.abs(obs_diff)).mean()
+    perm_pvals_all[name] = perm_diffs
+
+    print(f"  {name:>20} | {t_pval:10.4f} | {perm_p:10.4f} | {t_stat:8.4f} | {obs_diff:10.4f}")
+print()
+print("  Permutation and t-test p-values agree closely for Normal data.")
+print("  Permutation test is valid even for heavy-tailed distributions (t(3)).")
+print()
+
+# ── Plots ──────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+fig.suptitle("Statistical Distances, Descriptive Stats & Resampling",
+             fontsize=11, fontweight="bold")
+
+# Plot 1: Boxplots of three distributions
+data_list  = list(distributions.values())
+labels_bp  = ["Normal(5,4)", "Right-skew", "Bimodal"]
+bp = axes[0].boxplot(data_list, labels=labels_bp, patch_artist=True,
+                     notch=True, vert=True)
+colors_bp = ["#85B7EB", "#F0997B", "#9FE1CB"]
+for patch, col in zip(bp["boxes"], colors_bp):
+    patch.set_facecolor(col)
+axes[0].set_ylabel("Value"); axes[0].set_title("Boxplots: 3 Distributions\\n(notch = 95% CI for median)")
+axes[0].grid(alpha=0.3)
+
+# Plot 2: Distances vs separation delta
+sep_range = np.linspace(0, 8, 80)
+kl_vals=[]; js_vals=[]; tv_vals=[]; w1_vals=[]
+for d in sep_range:
+    pp = stats.norm.pdf(x_grid, 0, 1); qq = stats.norm.pdf(x_grid, d, 1)
+    kl_vals.append(min(kl_div(pp, qq), 25))
+    js_vals.append(js_div(pp, qq))
+    tv_vals.append(tv_dist(pp, qq))
+    w1_vals.append(wasserstein1(pp, qq))
+axes[1].plot(sep_range, kl_vals, lw=2, label="KL(p||q)", color="steelblue")
+axes[1].plot(sep_range, js_vals, lw=2, label="JS",        color="tomato")
+axes[1].plot(sep_range, tv_vals, lw=2, label="TV",        color="seagreen")
+axes[1].plot(sep_range, w1_vals, lw=2, label="W1",        color="purple")
+axes[1].axhline(np.log(2), color="tomato", lw=1, linestyle=":", alpha=0.6)
+axes[1].axhline(1.0, color="seagreen", lw=1, linestyle=":", alpha=0.6)
+axes[1].set_xlabel("Mean separation δ"); axes[1].set_ylabel("Distance")
+axes[1].set_title("N(0,1) vs N(δ,1) as δ grows\\nKL unbounded; JS/TV saturate")
+axes[1].legend(fontsize=8); axes[1].grid(alpha=0.3); axes[1].set_ylim(-0.1, 8)
+
+# Plot 3: Jackknife leave-one-out distribution for mean
+_, _, _, loo_mean = jackknife(data_jk, lambda d: d.mean())
+axes[2].hist(loo_mean, bins=25, color="steelblue", alpha=0.7, density=True, label="LOO estimates")
+axes[2].axvline(data_jk.mean(), color="tomato", lw=2, linestyle="--", label=f"Full est.={data_jk.mean():.3f}")
+axes[2].axvline(2.0, color="k", lw=1.5, linestyle=":", label="True mean=2.0")
+axes[2].set_xlabel("Leave-one-out mean estimate")
+axes[2].set_title("Jackknife LOO Distribution\\nMean of Exponential(2)")
+axes[2].legend(fontsize=8); axes[2].grid(alpha=0.3)
+
+# Plot 4: Permutation null distribution vs observed
+name_p = "Normal, δ=1.0"
+perm_d = perm_pvals_all[name_p]
+_, g1_p, g2_p = [s for s in scenarios if s[0] == name_p][0]
+obs    = g1_p.mean() - g2_p.mean()
+axes[3].hist(perm_d, bins=60, color="steelblue", alpha=0.7, density=True, label="Null distribution")
+axes[3].axvline(obs,  color="tomato",   lw=2.5, label=f"Observed diff={obs:.3f}")
+axes[3].axvline(-obs, color="tomato",   lw=2.5, linestyle="--")
+perm_p_plot = (np.abs(perm_d) >= np.abs(obs)).mean()
+axes[3].set_xlabel("Permutation mean difference")
+axes[3].set_title(f"Permutation Test (δ=1.0)\\nPermutation p = {perm_p_plot:.4f}")
+axes[3].legend(fontsize=8); axes[3].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "distances_resampling.png", dpi=120)
+print("  Plot saved → distances_resampling.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  JS divergence is bounded (<=ln2) and symmetric — unlike KL.")
+print("  Wasserstein is the only distance that varies continuously even")
+print("  for distributions with disjoint support.")
+print("  Jackknife works well for smooth statistics; bootstrap is preferred")
+print("  for non-smooth ones (median). Permutation tests are assumption-free.")
 ''',
     },
 

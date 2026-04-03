@@ -13,12 +13,12 @@ def get_all_topics() -> dict:
     for py_file in sorted(pkg_dir.glob("*.py")):
         if py_file.name.startswith("_"):
             continue
-        module_name = f"00_ML_Foundation_Math_Core.topics.{py_file.stem}"
+        module_name = f"01_ML_Foundation_Math_Core.topics.{py_file.stem}"
         try:
             mod = importlib.import_module(module_name)
         except Exception as e:
             import warnings
-            warnings.warn(f"[00_ML_Foundation_Math_Core.topics] Could not import '{module_name}': {e}", stacklevel=2)
+            warnings.warn(f"[01_ML_Foundation_Math_Core.topics] Could not import '{module_name}': {e}", stacklevel=2)
             continue
         if not hasattr(mod, "get_content"):
             continue
@@ -26,7 +26,7 @@ def get_all_topics() -> dict:
             data = mod.get_content()
         except Exception as e:
             import warnings
-            warnings.warn(f"[00_ML_Foundation_Math_Core.topics] get_content() failed in '{module_name}': {e}", stacklevel=2)
+            warnings.warn(f"[01_ML_Foundation_Math_Core.topics] get_content() failed in '{module_name}': {e}", stacklevel=2)
             continue
         key = data.get("display_name", py_file.stem)
         topics[key] = data

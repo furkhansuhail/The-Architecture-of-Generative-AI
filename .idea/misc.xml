@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Black">
-    <option name="sdkName" value="Python 3.10 (01_The-Architecture-of-Generative-AI)" />
+    <option name="sdkName" value="Python 3.10 (The-Architecture-of-Generative-AI) (2)" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (The-Architecture-of-Generative-AI) (2)" project-jdk-type="Python SDK" />
 </project>

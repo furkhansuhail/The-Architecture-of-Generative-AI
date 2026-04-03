@@ -86,6 +86,34 @@ Important theorem — Intermediate Value Theorem (IVT):
     Guarantees existence of zeros, roots, and fixed points.
 
 
+### Squeeze Theorem
+
+If g(x) ≤ f(x) ≤ h(x) near a, and lim_{x→a} g(x) = lim_{x→a} h(x) = L,
+then lim_{x→a} f(x) = L.
+
+The function f is "squeezed" between two functions that converge to the
+same limit — so f must converge there too.
+
+    Diagram — Squeeze:
+
+    h(x) ↑  ╮                (h bounds from above)
+    f(x) ↑  ╯→ L   at x→a
+    g(x) ↑  ╭→ L             (g bounds from below)
+
+Classic examples:
+    lim_{x→0} x² sin(1/x) = 0
+        Use −x² ≤ x²sin(1/x) ≤ x²; both bounds → 0.
+    lim_{x→0} sin(x)/x = 1
+        Use cos(x) ≤ sin(x)/x ≤ 1 for x ∈ (0, π/2).
+
+ML relevance — bounding noisy quantities:
+    In convergence analysis, gradient variance terms are often bounded
+    between zero and a known σ² envelope.  The squeeze theorem formalises
+    why "the error is between 0 and εₜ → 0" implies convergence.
+    It also underlies the proof that (1 + x/n)ⁿ → eˣ, which appears in
+    continuous-time limit derivations of SGD dynamics.
+
+
 ### Differentiability
 
 f is DIFFERENTIABLE at a if the following limit exists:
@@ -177,6 +205,43 @@ For indeterminate forms 0/0 or ∞/∞:
 
 Useful for analysing activation function behaviour, softmax stability,
 and learning rate schedules near convergence.
+
+
+### Implicit Differentiation
+
+When a curve is defined implicitly by F(x, y) = 0 rather than
+explicitly by y = f(x), differentiate both sides with respect to x
+treating y as a function of x, then solve for dy/dx.
+
+    Example:  x² + y² = r²    (circle)
+        Differentiate: 2x + 2y(dy/dx) = 0
+        Solve:          dy/dx = −x/y
+
+    Example:  eˣʸ + x = sin(y)
+        Differentiate: eˣʸ(y + x·dy/dx) + 1 = cos(y)·dy/dx
+        Collect dy/dx: dy/dx [x·eˣʸ − cos(y)] = −y·eˣʸ − 1
+        Solve:          dy/dx = (−y·eˣʸ − 1) / (x·eˣʸ − cos(y))
+
+General rule — implicit function theorem:
+    If F(x, y) = 0 and ∂F/∂y ≠ 0, then locally y = f(x) exists and:
+
+        dy/dx = − (∂F/∂x) / (∂F/∂y)
+
+    The multivariable form: if F(x, θ) = 0 defines θ implicitly as a
+    function of x, then:
+
+        dθ/dx = − (∂F/∂x) / (∂F/∂θ)    (when ∂F/∂θ is invertible)
+
+ML relevance — implicit gradients:
+    Meta-learning (MAML, iMAML) and bi-level optimisation require
+    differentiating through an inner optimisation problem.  If θ*(x)
+    is defined by the stationarity condition ∇_θ L(θ, x) = 0, then:
+
+        dθ*/dx = − (∂²L/∂θ²)⁻¹ · (∂²L/∂θ∂x)
+
+    This is implicit differentiation applied to the gradient equation
+    F(θ, x) = ∇_θ L(θ, x) = 0.  Computing this inverse-Hessian-vector
+    product efficiently is the core challenge of meta-learning algorithms.
 
 
 ### Mean Value Theorem (MVT)
@@ -800,7 +865,31 @@ cancel (damp oscillations). Converges at rate O(κ) → O(√κ) for quadratics.
     In PyTorch: SGD(nesterov=True)
 
 
-### Adaptive Methods — RMSProp, Adam
+### Adaptive Methods — AdaGrad, RMSProp, Adam
+
+**AdaGrad (Adaptive Gradient):**  Accumulate squared gradients to adapt per-parameter:
+
+    Gₜ = Gₜ₋₁ + gₜ²             (cumulative sum of squared gradients)
+    xₜ₊₁ = xₜ − η gₜ / √(Gₜ + ε)
+
+    Intuition: parameters that receive large gradients get a smaller
+    effective step; rarely-updated parameters (sparse features) get a
+    larger step.
+
+    AdaGrad excels on sparse data (NLP bag-of-words, recommendation
+    systems): infrequent features accumulate small Gₜ → large effective η.
+
+    Critical weakness: Gₜ grows monotonically → effective learning rate
+    decays to zero over time.  For non-convex deep learning this means
+    training stalls before convergence.  RMSProp and Adam fix this by
+    using an EXPONENTIAL MOVING AVERAGE of squared gradients instead of
+    a running sum.
+
+    AdaGrad convergence (convex, non-smooth):
+        Regret ≤ O(√T)   (optimal for online convex optimisation)
+        The monotonically shrinking step is a feature here — it enforces
+        decreasing updates as the cumulative evidence grows.
+
 
 **RMSProp:**  Maintain per-parameter estimate of gradient scale:
 
@@ -870,6 +959,49 @@ Integration by parts (the integration analogue of the product rule):
 Applied in: variational inference, EM algorithm derivations, sampling.
 
 
+### Multiple Integrals
+
+For f: ℝⁿ → ℝ, integration extends naturally to higher dimensions.
+
+**Double integral:**
+
+    ∬_D f(x, y) dA = ∫_{a}^{b} ∫_{g(x)}^{h(x)} f(x, y) dy dx
+
+    Fubini's theorem: if f is continuous on the rectangle [a,b]×[c,d]:
+
+        ∫_{a}^{b} ∫_{c}^{d} f(x,y) dy dx = ∫_{c}^{d} ∫_{a}^{b} f(x,y) dx dy
+
+    The order of integration can be swapped freely for continuous f.
+
+**Triple and n-fold integrals:**
+
+    ∭_V f(x,y,z) dV   — volume integral over region V ⊆ ℝ³
+    ∫_{ℝⁿ} f(x) dx    — n-dimensional integral (Lebesgue sense)
+
+**Change of variables in multiple integrals:**
+
+    For a bijective transformation (x,y) = T(u,v):
+
+        ∬_D f(x,y) dA = ∬_{D'} f(T(u,v)) |det J_T(u,v)| du dv
+
+    The absolute Jacobian determinant |det J| corrects for area distortion.
+
+    Common transforms:
+        Polar:      x=r cosθ, y=r sinθ    |J| = r
+        Cylindrical: x=r cosθ, y=r sinθ, z=z   |J| = r
+        Spherical:  x=ρ sinφ cosθ, ...    |J| = ρ² sinφ
+
+ML relevance — marginalisation and normalisation:
+    Marginalising a joint density p(x, z):
+        p(x) = ∫ p(x, z) dz    (intractable in general → variational approx)
+    Partition function of energy models:
+        Z = ∫ e^{−E(x)} dx     (intractable → MCMC or contrastive divergence)
+    Gaussian normalisation:
+        ∫_{ℝⁿ} exp(−½ xᵀΣ⁻¹x) dx = (2π)^{n/2} |Σ|^{½}
+        Proof uses the change-of-variables to principal axes plus the
+        1D Gaussian integral ∫e^{−t²}dt = √π.
+
+
 ### Expected Values as Integrals
 
 For a continuous random variable X with density p(x):
@@ -923,7 +1055,203 @@ Maximising the ELBO simultaneously:
     2. Maximises reconstruction quality: 𝔼[log p(x|z)]
 
 
-### PART 10 — AUTOMATIC DIFFERENTIATION
+### PART 10 — VECTOR CALCULUS
+
+### The Del Operator ∇
+
+In ℝⁿ, the del (nabla) operator is the vector of partial derivatives:
+
+    ∇ = (∂/∂x₁, ∂/∂x₂, ..., ∂/∂xₙ)
+
+Applied to different objects it produces three fundamental quantities:
+
+    ∇f      = gradient     (scalar field → vector field)
+    ∇ · F   = divergence   (vector field → scalar field)
+    ∇ × F   = curl         (vector field → vector field, in ℝ³)
+    ∇²f     = Laplacian    (scalar field → scalar field)
+
+
+### Gradient (Recap & Extension)
+
+For f: ℝⁿ → ℝ:
+
+    ∇f(x) = (∂f/∂x₁, ..., ∂f/∂xₙ)
+
+Points in the direction of steepest ascent; magnitude = rate of change.
+Already covered in Part 3; listed here to complete the del-operator family.
+
+
+### Divergence
+
+For a vector field F: ℝⁿ → ℝⁿ,  F = (F₁, ..., Fₙ):
+
+    ∇ · F = ∂F₁/∂x₁ + ∂F₂/∂x₂ + ··· + ∂Fₙ/∂xₙ    (scalar)
+
+Geometric meaning: divergence measures the NET OUTFLOW of F at a point.
+    ∇ · F > 0: F is spreading outward (source)
+    ∇ · F < 0: F is converging inward (sink)
+    ∇ · F = 0: divergence-free / incompressible
+
+    Diagram — Divergence:
+
+    Source (∇·F > 0)       Sink (∇·F < 0)      Uniform (∇·F = 0)
+        ↗ ↑ ↖                  ↘ ↓ ↙               → → →
+        ← · →                  → · ←               → → →
+        ↙ ↓ ↘                  ↗ ↑ ↖               → → →
+
+ML relevance:
+    In normalising flows, |det J| = divergence-type measure of volume change.
+    Continuous normalising flows (CNFs) use the instantaneous change-of-
+    variables formula: d/dt log p(x(t)) = −∇ · f(x(t), t), where f is the
+    learned vector field — the trace of the Jacobian equals the divergence.
+
+
+### Curl
+
+For F = (P, Q, R): ℝ³ → ℝ³:
+
+    ∇ × F = ( ∂R/∂y − ∂Q/∂z,   ∂P/∂z − ∂R/∂x,   ∂Q/∂x − ∂P/∂y )
+
+Geometric meaning: curl measures ROTATIONAL TENDENCY at a point.
+    ∇ × F = 0: irrotational (conservative field — has a potential)
+    ‖∇ × F‖:   angular speed of infinitesimal fluid rotation
+
+A vector field F is CONSERVATIVE iff ∇ × F = 0 (in simply-connected domain),
+equivalently ∃ scalar potential φ such that F = ∇φ.
+
+In 2D, the scalar curl is:  (∂Q/∂x − ∂P/∂y)  (the z-component of ∇×F).
+
+
+### The Laplacian
+
+For f: ℝⁿ → ℝ:
+
+    ∇²f = ∇ · (∇f) = ∂²f/∂x₁² + ∂²f/∂x₂² + ··· + ∂²f/∂xₙ²    (scalar)
+
+The Laplacian is the SUM OF SECOND DERIVATIVES — the divergence of the
+gradient.  It measures how the value of f at a point differs from its
+local average: ∇²f > 0 means f is below its neighbours (bowl-shaped);
+∇²f < 0 means f is above (hill-shaped).
+
+Harmonic functions: ∇²f = 0  (Laplace equation)
+    Solutions are "as smooth as possible" — max/min only on the boundary.
+
+The vector Laplacian: ∇²F = (∇²F₁, ∇²F₂, ∇²F₃)
+
+ML relevance:
+    Graph Laplacian L = D − A (D = degree matrix, A = adjacency) is the
+    discrete analogue.  The normalised form L̂ = D^{−½}LD^{−½} is the core
+    operator in spectral GNNs (GCN, ChebNet).  Its eigenvalues are the graph
+    "frequencies"; low eigenvalues = smooth signals over the graph.
+    Laplacian regularisation: min ‖y − f‖² + λ fᵀLf
+    penalises functions that vary sharply between connected nodes.
+
+
+### Line Integrals
+
+The line integral of a scalar field f along a curve C:
+
+    ∫_C f ds = ∫_{a}^{b} f(r(t)) ‖r'(t)‖ dt
+
+The line integral of a VECTOR FIELD F along C (work integral):
+
+    ∫_C F · dr = ∫_{a}^{b} F(r(t)) · r'(t) dt
+
+    Physical meaning: total work done by force F along path C.
+
+For a conservative field F = ∇φ:
+    ∫_C F · dr = φ(B) − φ(A)   (path-independent — only endpoints matter)
+    ∮_C F · dr = 0              (closed-loop integral vanishes)
+
+
+### Surface Integrals
+
+The surface integral of f over surface S:
+
+    ∬_S f dS = ∬_{D} f(r(u,v)) ‖rᵤ × rᵥ‖ du dv
+
+The flux integral of F through S (flow across a surface):
+
+    ∬_S F · dS = ∬_S F · n̂ dS = ∬_{D} F(r(u,v)) · (rᵤ × rᵥ) du dv
+
+    Physical meaning: net flow of F across surface S per unit time.
+
+
+### Green's Theorem
+
+Relates a line integral around a CLOSED PLANE CURVE C to a double
+integral over the enclosed region D:
+
+    ∮_C (P dx + Q dy) = ∬_D (∂Q/∂x − ∂P/∂y) dA
+
+    Left side: circulation of F = (P, Q) around the boundary.
+    Right side: integral of the 2D scalar curl over the interior.
+
+    Special case (area):  A = ½ ∮_C (x dy − y dx)
+
+Green's theorem = 2D special case of Stokes' theorem.
+
+ML relevance: used in proofs about 2D flow models and in deriving
+integration-by-parts identities for training objectives.
+
+
+### Stokes' Theorem
+
+Generalises Green's theorem to a SURFACE S with boundary curve ∂S:
+
+    ∮_{∂S} F · dr = ∬_S (∇ × F) · dS
+
+    Left side: circulation of F around the boundary curve.
+    Right side: flux of the curl through the surface.
+
+    ┌────────────────────────────────────────────────────────────┐
+    │  Stokes' theorem: boundary integral = interior curl flux   │
+    │  "Local rotation (curl) sums to global boundary twist"     │
+    └────────────────────────────────────────────────────────────┘
+
+Key corollary: if ∇ × F = 0 everywhere on S, then the circulation
+around any closed curve on S is zero — confirming F is conservative.
+
+
+### Divergence Theorem (Gauss's Theorem)
+
+Relates the flux of F through a CLOSED SURFACE ∂V to the divergence
+integral over the enclosed volume V:
+
+    ∯_{∂V} F · dS = ∭_V (∇ · F) dV
+
+    Left side: total flux out through the closed surface.
+    Right side: sum of all sources/sinks inside the volume.
+
+    ┌────────────────────────────────────────────────────────────┐
+    │  "What flows out = sum of all sources inside"              │
+    │  Global flux = integral of local divergence                │
+    └────────────────────────────────────────────────────────────┘
+
+ML relevance: the instantaneous change-of-variables in continuous
+normalising flows (∂_t log p = −∇ · v_θ) is the infinitesimal form of
+the divergence theorem.  Flows preserve probability mass: total
+probability that "flows out" of any region equals the divergence inside.
+
+
+### Unified View — The Generalised Stokes' Theorem
+
+All four integral theorems (FTC, Green's, Stokes', Divergence) are
+special cases of a single theorem on manifolds:
+
+    ∫_{∂M} ω = ∫_M dω
+
+    M: oriented manifold with boundary ∂M.
+    ω: differential form.
+    d: exterior derivative operator.
+
+    FTC:        M = [a,b],    ω = f,    dω = f' dx
+    Green's:    M = D ⊆ ℝ², ω = Pdx+Qdy
+    Stokes':    M = surface,  ω = 1-form
+    Divergence: M = volume,   ω = 2-form, dω = divergence 3-form
+
+
+### PART 11 — AUTOMATIC DIFFERENTIATION
 
 ### Three Ways to Compute Derivatives
 
@@ -1023,7 +1351,7 @@ Use h = 10⁻⁵ for central differences; avoid h too small (catastrophic
 cancellation in float64) or too large (Taylor truncation error).
 
 
-### PART 11 — CALCULUS & OPTIMISATION IN ML: THE UNIFIED VIEW
+### PART 12 — CALCULUS & OPTIMISATION IN ML: THE UNIFIED VIEW
 
 ### Every Major ML Concept Through Optimisation
 
@@ -1092,6 +1420,143 @@ Modern deep networks have loss landscapes with:
     Loss of plasticity: over training, network gradients can collapse.
     Periodic re-initialisation or special architectures (LayerNorm, ResNet)
     preserve gradient signal across depth.
+
+
+### PART 13 — DIFFERENTIAL EQUATIONS FOR ML
+
+### Ordinary Differential Equations (ODEs)
+
+An ODE describes how a state x(t) ∈ ℝⁿ evolves continuously in time:
+
+    dx/dt = f(x(t), t)    (autonomous if f does not depend on t explicitly)
+
+The solution x(t) is a TRAJECTORY through state space.
+
+**Existence & Uniqueness (Picard–Lindelöf):**
+    If f is Lipschitz continuous in x, then for any initial condition
+    x(t₀) = x₀, a unique solution exists on some interval [t₀, t₀+ε].
+
+**Numerical solvers (discretise continuous dynamics):**
+
+    Euler method (first-order):
+        x(t+h) ≈ x(t) + h · f(x(t), t)    (error O(h²) per step)
+
+    Runge-Kutta 4 (fourth-order):
+        k₁ = f(x,t),       k₂ = f(x+½hk₁, t+½h)
+        k₃ = f(x+½hk₂, t+½h),  k₄ = f(x+hk₃, t+h)
+        x(t+h) = x(t) + (h/6)(k₁ + 2k₂ + 2k₃ + k₄)   (error O(h⁵) per step)
+
+    The Euler method = a single gradient descent step with step size h.
+    Each forward pass of a ResNet approximates one Euler step of an ODE.
+
+
+### Neural ODEs
+
+**Chen et al. (2018)** reframed a residual network as a continuous ODE:
+
+    ResNet:    xₗ₊₁ = xₗ + f(xₗ, θₗ)          (discrete residual block)
+    NeuralODE: dx/dt = f(x(t), t, θ)            (continuous dynamics)
+
+The forward pass SOLVES the ODE from t=0 to t=T using any black-box solver:
+
+    x(T) = x(0) + ∫₀ᵀ f(x(t), t, θ) dt
+
+    Depth becomes a CONTINUOUS parameter — not a discrete number of layers.
+    Memory cost: O(1) with the adjoint method (vs O(L) for backprop through L layers).
+
+**Adjoint method (backpropagation through the ODE solver):**
+
+Define the adjoint a(t) = ∂L/∂x(t)  (how the loss changes with each state).
+
+The adjoint satisfies its own (reverse-time) ODE:
+
+    da/dt = −a(t)ᵀ ∂f/∂x(x(t), t, θ)
+
+Gradients w.r.t. parameters:
+
+    dL/dθ = −∫_T^0 a(t)ᵀ ∂f/∂θ (x(t), t, θ) dt
+
+The adjoint method is implicit differentiation applied to the ODE.
+It runs the solver BACKWARDS in time, computing gradients without
+storing the forward trajectory:
+
+    ┌────────────────────────────────────────────────────────────┐
+    │  Forward:  x(0) → [ODE solver] → x(T)     O(1) memory     │
+    │  Backward: a(T) → [adjoint ODE] → a(0)    O(1) memory     │
+    │  Compare:  backprop through L Euler steps  O(L) memory     │
+    └────────────────────────────────────────────────────────────┘
+
+Adaptive solvers (e.g. Dormand-Prince) automatically choose step sizes
+to hit a tolerance target — depth adapts to the complexity of the input.
+
+Applications:
+    Continuous normalising flows: learn bijection via ODE dynamics.
+    Latent ODEs: model irregular time-series as continuous latent states.
+    Second-order Neural ODEs: model Hamiltonian / Lagrangian mechanics.
+
+
+### Gradient Flow
+
+The GRADIENT FLOW of a function f: ℝⁿ → ℝ is the ODE:
+
+    dx/dt = −∇f(x(t))
+
+This is the CONTINUOUS-TIME LIMIT of gradient descent as step size → 0.
+
+    Gradient descent:  xₜ₊₁ = xₜ − η∇f(xₜ)   (discrete, step size η)
+    Gradient flow:     dx/dt = −∇f(x)           (η→0, time becomes continuous)
+
+Properties of gradient flow:
+    f decreases monotonically: d/dt f(x(t)) = ∇f · dx/dt = −‖∇f‖² ≤ 0
+    Fixed points = critical points: dx/dt = 0 iff ∇f(x) = 0
+    For μ-strongly convex f: f(x(t)) − f* ≤ e^{−2μt}[f(x₀)−f*]
+
+
+### Continuous-Time Optimisation
+
+**Polyak Heavy Ball (continuous ODE form):**
+
+    ẍ + γẋ = −∇f(x)    (damped harmonic oscillator)
+
+    γ > 0: friction / damping coefficient.
+    The "ball" rolls down the loss surface with momentum; γ controls damping.
+    Optimal γ = 2√μ (critically damped) → convergence O(e^{−√μ t}).
+
+**Nesterov's ODE (Su–Boyd–Candès 2016):**
+
+    ẍ + (3/t)ẋ = −∇f(x)
+
+    The vanishing damping (3/t → 0 as t→∞) is the continuous-time
+    explanation for Nesterov's accelerated rate: the system becomes less
+    damped over time, allowing it to accelerate toward the minimum.
+
+    ┌────────────────────────────────────────────────────────────┐
+    │  Nesterov ODE insight:                                     │
+    │  Faster convergence = weaker damping = more oscillation    │
+    │  Discretising the ODE recovers the discrete algorithm      │
+    └────────────────────────────────────────────────────────────┘
+
+**Langevin Dynamics (stochastic ODE for sampling):**
+
+    dx = −∇f(x) dt + √(2T) dW    (W = Wiener process / Brownian motion)
+
+    The noise term prevents the trajectory from getting stuck at a local
+    minimum.  The stationary distribution is the Gibbs distribution:
+        π(x) ∝ exp(−f(x)/T)
+    Discretised Langevin = Stochastic Gradient Langevin Dynamics (SGLD):
+        xₜ₊₁ = xₜ − η∇fᵢ(xₜ) + √(2ηT) ξₜ,   ξₜ ~ N(0,I)
+    SGLD simultaneously minimises and samples from the posterior.
+
+**Convergence rate comparison (continuous time):**
+
+    ┌──────────────────────────┬──────────────────────────────────┐
+    │ Method                   │ Rate (strongly convex, μ-SC)     │
+    ├──────────────────────────┼──────────────────────────────────┤
+    │ Gradient flow            │ f − f* ≤ e^{−2μt} [f₀ − f*]     │
+    │ Heavy ball (optimal γ)   │ f − f* ≤ e^{−2√μt} [f₀ − f*]    │
+    │ Nesterov ODE             │ f − f* = O(1/t²)  (general cvx)  │
+    │ Langevin (T→0)           │ converges to global min (non-cvx) │
+    └──────────────────────────┴──────────────────────────────────┘
 
 """
 
@@ -2093,6 +2558,511 @@ print("  Momentum/Nesterov: O(√κ) convergence — damp oscillations.")
 print("  Adam: per-parameter learning rates overcome curvature anisotropy.")
 print("  Rosenbrock: curved banana valley traps gradient methods;")
 print("              Adam navigates it faster via adaptive scaling.")
+''',
+    },
+
+    # ── 6 ─────────────────────────────────────────────────────────────────────
+    "6 · Vector Calculus — Divergence, Curl, and Integral Theorems": {
+        "description": (
+            "Compute gradient, divergence, curl and Laplacian on analytic fields. "
+            "Numerically verify Green's theorem and the Divergence theorem on a "
+            "2D/3D domain.  Visualise field topology and the Laplacian on a "
+            "graph (discrete analogue used in spectral GNNs)."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from scipy.linalg import eigh
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.set_printoptions(precision=6, suppress=True)
+
+print("=" * 65)
+print("  VECTOR CALCULUS — DIVERGENCE, CURL & INTEGRAL THEOREMS")
+print("=" * 65)
+print()
+
+# ── PART 1: Analytic gradient, divergence, curl, Laplacian ───────────────
+# Field F(x,y) = (sin(x)cos(y),  -cos(x)sin(y))  — known div = 0, curl analytic
+print("  PART 1 — ANALYTIC VECTOR FIELD F = (sin x cos y, −cos x sin y)")
+print()
+
+def F(x, y):
+    return np.sin(x)*np.cos(y), -np.cos(x)*np.sin(y)
+
+def div_F(x, y):
+    # ∂F₁/∂x + ∂F₂/∂y = cos(x)cos(y) + cos(x)cos(y) ... wait:
+    # F₁ = sin(x)cos(y) → ∂F₁/∂x = cos(x)cos(y)
+    # F₂ = −cos(x)sin(y) → ∂F₂/∂y = −cos(x)cos(y)
+    # div = cos(x)cos(y) − cos(x)cos(y) = 0  (divergence-free!)
+    return np.cos(x)*np.cos(y) - np.cos(x)*np.cos(y)
+
+def curl_F_z(x, y):
+    # curl z-component = ∂F₂/∂x − ∂F₁/∂y
+    # ∂F₂/∂x = sin(x)sin(y)
+    # ∂F₁/∂y = −sin(x)sin(y)
+    # curl = sin(x)sin(y) + sin(x)sin(y) = 2sin(x)sin(y)
+    return 2*np.sin(x)*np.sin(y)
+
+def laplacian_scalar(f, x, y, h=1e-5):
+    return (f(x+h,y) + f(x-h,y) + f(x,y+h) + f(x,y-h) - 4*f(x,y)) / h**2
+
+# Test at a specific point
+px, py = np.pi/4, np.pi/3
+F1, F2 = F(px, py)
+div_val  = div_F(px, py)
+curl_val = curl_F_z(px, py)
+print(f"  At (π/4, π/3):")
+print(f"  F           = ({F1:.6f}, {F2:.6f})")
+print(f"  Divergence  = {div_val:.6f}  (analytic = 0.0 — divergence-free field)")
+print(f"  Curl (z)    = {curl_val:.6f}  (analytic = 2·sin(π/4)·sin(π/3) = {2*np.sin(px)*np.sin(py):.6f})")
+print()
+
+# Numerical verification with finite differences
+def div_numerical(x, y, h=1e-5):
+    dF1_dx = (F(x+h,y)[0] - F(x-h,y)[0]) / (2*h)
+    dF2_dy = (F(x,y+h)[1] - F(x,y-h)[1]) / (2*h)
+    return dF1_dx + dF2_dy
+
+def curl_numerical(x, y, h=1e-5):
+    dF2_dx = (F(x+h,y)[1] - F(x-h,y)[1]) / (2*h)
+    dF1_dy = (F(x,y+h)[0] - F(x,y-h)[0]) / (2*h)
+    return dF2_dx - dF1_dy
+
+div_num  = div_numerical(px, py)
+curl_num = curl_numerical(px, py)
+print(f"  Numerical divergence : {div_num:.2e}  (should be ≈ 0)")
+print(f"  Numerical curl       : {curl_num:.6f}  (analytic: {curl_val:.6f})")
+print(f"  Curl error           : {abs(curl_num - curl_val):.2e}")
+print()
+
+# ── PART 2: Green's Theorem numerical verification ────────────────────────
+# ∮_C (P dx + Q dy) = ∬_D (∂Q/∂x − ∂P/∂y) dA
+# Use P = −y, Q = x  →  ∂Q/∂x − ∂P/∂y = 1 + 1 = 2
+# Rectangle [0,a]×[0,b]:  line integral = 2·a·b = area × 2
+print("  PART 2 — GREEN'S THEOREM VERIFICATION")
+print("  Field: P = −y, Q = x   →   curl = ∂Q/∂x − ∂P/∂y = 2")
+print()
+
+a, b = 2.0, 3.0
+N = 10000  # points per side
+
+def line_integral_rect(a, b, N):
+    """∮_C P dx + Q dy around rectangle [0,a]×[0,b] CCW"""
+    dt = 1.0 / N
+    total = 0.0
+    # Bottom: y=0, x: 0→a
+    xs = np.linspace(0, a, N, endpoint=False)
+    ys = np.zeros(N)
+    total += np.sum(-ys * a * dt)         # P dx,  dx = a·dt
+    # Right: x=a, y: 0→b
+    xs2 = np.full(N, a)
+    ys2 = np.linspace(0, b, N, endpoint=False)
+    total += np.sum(xs2 * b * dt)         # Q dy,  dy = b·dt
+    # Top: y=b, x: a→0
+    xs3 = np.linspace(a, 0, N, endpoint=False)
+    ys3 = np.full(N, b)
+    total += np.sum(-ys3 * (-a) * dt)     # P dx,  dx = -a·dt
+    # Left: x=0, y: b→0
+    xs4 = np.zeros(N)
+    ys4 = np.linspace(b, 0, N, endpoint=False)
+    total += np.sum(xs4 * (-b) * dt)      # Q dy,  dy = -b·dt
+    return total
+
+line_val   = line_integral_rect(a, b, N)
+double_val = 2.0 * a * b   # analytic: ∬ 2 dA = 2ab
+print(f"  Rectangle [{a}]×[{b}]:")
+print(f"  Line integral  ∮ (−y dx + x dy) = {line_val:.6f}")
+print(f"  Double integral ∬ 2 dA           = {double_val:.6f}  (analytic)")
+print(f"  Relative error                   = {abs(line_val - double_val)/double_val:.2e}")
+print()
+
+# ── PART 3: Divergence Theorem in 2D (Green's first identity) ────────────
+# For F = (x², xy) on unit disk, ∬ div F dA = ∮ F·n ds
+# div F = 2x + x = 3x
+# On unit disk: ∬ 3x dA = 0  (by symmetry — integrand is odd)
+print("  PART 3 — DIVERGENCE THEOREM (2D) VERIFICATION")
+print("  Field: F = (x², xy)   div F = 2x + x = 3x")
+print("  Domain: unit disk.  ∬ 3x dA = 0  (odd integrand, symmetric domain)")
+print()
+
+# Compute ∬ div F dA numerically on unit disk via Monte Carlo
+rng = np.random.default_rng(42)
+N_mc = 500_000
+pts  = rng.uniform(-1, 1, (N_mc, 2))
+inside = (pts[:,0]**2 + pts[:,1]**2) <= 1.0
+div_mc = 3.0 * pts[inside, 0]
+area   = np.pi  # unit disk
+vol_integral = div_mc.mean() * area   # Monte Carlo estimate
+
+# Compute ∮ F·n ds on unit circle (parametric)
+N_line = 50000
+theta  = np.linspace(0, 2*np.pi, N_line, endpoint=False)
+dtheta = 2*np.pi / N_line
+cx, cy = np.cos(theta), np.sin(theta)
+Fx = cx**2
+Fy = cx * cy
+# Outward normal n = (cos θ, sin θ), ds = dθ
+flux = np.sum((Fx*cx + Fy*cy) * dtheta)
+
+print(f"  Volume integral ∬ div F dA  = {vol_integral:.6f}  (MC, N={N_mc:,}, expected ≈ 0)")
+print(f"  Surface flux    ∮ F·n ds    = {flux:.6f}  (parametric, expected ≈ 0)")
+print(f"  Absolute error              = {abs(vol_integral - flux):.2e}  (both ≈ 0 by symmetry)")
+print()
+
+# ── PART 4: Graph Laplacian (discrete vector calculus) ───────────────────
+print("  PART 4 — GRAPH LAPLACIAN (DISCRETE ANALOGUE)")
+print()
+
+# Build a simple path graph: 0 - 1 - 2 - 3 - 4
+n = 5
+A = np.zeros((n, n))
+for i in range(n-1):
+    A[i, i+1] = A[i+1, i] = 1.0
+D = np.diag(A.sum(axis=1))
+L = D - A                         # combinatorial Laplacian
+D_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(D)))
+L_norm = D_inv_sqrt @ L @ D_inv_sqrt  # normalised Laplacian
+
+vals, vecs = eigh(L)
+print(f"  Path graph (5 nodes):  L =")
+print(f"  {L}")
+print()
+print(f"  Eigenvalues of L: {vals.round(4)}")
+print(f"  (λ₀ = 0 always — constant signal is harmonic)")
+print(f"  Eigenvectors (columns) = graph Fourier basis:")
+for i, (lam, vec) in enumerate(zip(vals, vecs.T)):
+    print(f"    λ_{i} = {lam:.4f}  |  eigenvec = [{', '.join(f'{v:+.3f}' for v in vec)}]")
+print()
+print(f"  Laplacian regularisation penalty  f^T L f  for f = ones:")
+f_sig  = np.ones(n)
+pen    = f_sig @ L @ f_sig
+print(f"  f = [1,1,1,1,1]  →  f^T L f = {pen:.4f}  (constant → zero penalty)")
+f_sig2 = np.array([1,-1,1,-1,1], dtype=float)
+pen2   = f_sig2 @ L @ f_sig2
+print(f"  f = [1,-1,1,-1,1] →  f^T L f = {pen2:.4f}  (high-freq → large penalty)")
+print()
+
+# ── Plots ──────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 3, figsize=(17, 5))
+fig.suptitle("Vector Calculus: Field Topology, Green's Theorem & Graph Laplacian",
+             fontsize=12, fontweight="bold")
+
+# Plot 1: Vector field F with divergence=0 and curl overlay
+xg, yg = np.meshgrid(np.linspace(-np.pi, np.pi, 30),
+                     np.linspace(-np.pi, np.pi, 30))
+F1g, F2g = F(xg, yg)
+curl_g   = curl_F_z(xg, yg)
+axes[0].contourf(xg, yg, curl_g, 25, cmap="RdBu_r", alpha=0.7)
+axes[0].quiver(xg, yg, F1g, F2g, alpha=0.8, color="k", scale=25)
+axes[0].set_title("F = (sin x cos y, -cos x sin y)\\nColour = curl(F), arrows = F\\n(div F = 0 everywhere)")
+axes[0].set_xlabel("x"); axes[0].set_ylabel("y")
+axes[0].set_aspect("equal")
+
+# Plot 2: Green's theorem — line integral path and integrand
+xr = np.array([0, a, a, 0, 0])
+yr = np.array([0, 0, b, b, 0])
+axes[1].fill(xr, yr, alpha=0.15, color="steelblue", label=f"Domain [{a}]×[{b}]")
+axes[1].plot(xr, yr, "steelblue", lw=2, label="Boundary C (CCW)")
+xg2, yg2 = np.meshgrid(np.linspace(0, a, 20), np.linspace(0, b, 20))
+axes[1].quiver(xg2, yg2, -yg2, xg2, alpha=0.5, color="tomato", scale=40)
+axes[1].set_title(f"Green's Theorem: P=−y, Q=x\\n∮=∬2dA={double_val:.2f}  (verified)")
+axes[1].set_xlabel("x"); axes[1].set_ylabel("y")
+axes[1].legend(fontsize=9); axes[1].set_aspect("equal")
+
+# Plot 3: Graph Laplacian eigenvectors (graph Fourier modes)
+palette = ["steelblue", "tomato", "seagreen", "purple", "orange"]
+for i, (lam, vec) in enumerate(zip(vals, vecs.T)):
+    axes[2].plot(range(n), vec, "o-", lw=2, markersize=8,
+                 color=palette[i], label=f"λ={lam:.3f}")
+axes[2].axhline(0, color="k", lw=0.5, linestyle="--")
+axes[2].set_xticks(range(n))
+axes[2].set_xlabel("Node"); axes[2].set_ylabel("Eigenvector component")
+axes[2].set_title("Graph Laplacian Eigenvectors\\n(5-node path — graph Fourier basis)")
+axes[2].legend(fontsize=9); axes[2].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "vector_calculus.png", dpi=120)
+print("  Plot saved → vector_calculus.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  Divergence-free (div F = 0): no sources or sinks — streamlines are closed.")
+print("  Curl ≠ 0: field has rotational structure — not conservative.")
+print("  Green's theorem numerically verified to <1e-4 relative error.")
+print("  Graph Laplacian eigenvectors = graph Fourier modes; λ₀=0 always.")
+print("  Low-λ modes are smooth over the graph; high-λ modes oscillate rapidly.")
+''',
+    },
+
+    # ── 7 ─────────────────────────────────────────────────────────────────────
+    "7 · Neural ODEs & Continuous-Time Optimisation": {
+        "description": (
+            "Implement Euler and RK4 ODE solvers from scratch. "
+            "Simulate the Neural ODE forward pass and adjoint-method backward pass. "
+            "Compare discrete gradient descent against gradient flow ODE. "
+            "Visualise the Nesterov damping ODE and Langevin dynamics trajectories."
+        ),
+        "language": "python",
+        "code": '''
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pathlib as _pl, os as _os
+_src = globals().get("__file__") or _os.path.abspath(".")
+OUTPUT_DIR = _pl.Path(_src).resolve().parent.parent / "Resultant_Graphs"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+np.set_printoptions(precision=6, suppress=True)
+rng = np.random.default_rng(0)
+
+print("=" * 65)
+print("  NEURAL ODEs & CONTINUOUS-TIME OPTIMISATION")
+print("=" * 65)
+print()
+
+# ── ODE Solvers ────────────────────────────────────────────────────────────
+def euler(f, x0, t0, T, h):
+    """Euler method: x(t+h) = x(t) + h·f(x(t),t)"""
+    ts = [t0]; xs = [x0.copy()]
+    x, t = x0.copy(), t0
+    while t < T - 1e-10:
+        h_eff = min(h, T - t)
+        x = x + h_eff * f(x, t)
+        t += h_eff
+        ts.append(t); xs.append(x.copy())
+    return np.array(ts), np.array(xs)
+
+def rk4(f, x0, t0, T, h):
+    """Runge-Kutta 4:  error O(h^5) per step vs O(h^2) for Euler"""
+    ts = [t0]; xs = [x0.copy()]
+    x, t = x0.copy(), t0
+    while t < T - 1e-10:
+        h_eff = min(h, T - t)
+        k1 = f(x,          t)
+        k2 = f(x + h_eff*k1/2, t + h_eff/2)
+        k3 = f(x + h_eff*k2/2, t + h_eff/2)
+        k4 = f(x + h_eff*k3,   t + h_eff)
+        x = x + (h_eff/6)*(k1 + 2*k2 + 2*k3 + k4)
+        t += h_eff
+        ts.append(t); xs.append(x.copy())
+    return np.array(ts), np.array(xs)
+
+# Test on x' = -2x  (exact: x(t) = x₀ e^{-2t})
+print("  ODE SOLVER ACCURACY: x' = −2x,  x(0)=1,  exact: e^{-2t}")
+print()
+f_decay = lambda x, t: -2.0 * x
+x0_d    = np.array([1.0])
+T_d     = 2.0
+exact_d = np.exp(-2.0 * T_d)
+print(f"  {'h':>8} | {'Euler err':>12} | {'RK4 err':>12}")
+print(f"  {'─'*40}")
+for h in [0.5, 0.1, 0.05, 0.01]:
+    _, xs_e = euler(f_decay, x0_d, 0.0, T_d, h)
+    _, xs_r = rk4(f_decay, x0_d, 0.0, T_d, h)
+    err_e = abs(xs_e[-1, 0] - exact_d)
+    err_r = abs(xs_r[-1, 0] - exact_d)
+    print(f"  {h:>8.3f} | {err_e:>12.2e} | {err_r:>12.2e}")
+print()
+print(f"  RK4 error ∝ h⁴ (4th-order), Euler error ∝ h (1st-order).")
+print()
+
+# ── Neural ODE forward + adjoint backward ─────────────────────────────────
+# Simple 1D Neural ODE: dx/dt = θ·x  (linear, so exact solution exists)
+# Loss: L = (x(T) - y*)²
+# Adjoint: da/dt = -a·θ,  dL/dθ = -∫ a(t)·x(t) dt
+print("  NEURAL ODE: dx/dt = θ·x,  x(0)=1,  T=1,  target y*=0.5")
+print()
+
+theta_true = -1.0    # true parameter (gives x(1)=e^{-1}≈0.368)
+y_star     = 0.5
+theta      = -0.5    # initial guess
+T_ode      = 1.0
+h_ode      = 0.01
+
+# Forward pass
+f_node = lambda x, t: np.array([theta]) * x
+ts_f, xs_f = rk4(f_node, np.array([1.0]), 0.0, T_ode, h_ode)
+xT = xs_f[-1, 0]
+loss = (xT - y_star)**2
+
+# Adjoint backward pass: da/dt = -a(t)·θ  (reversed time)
+# dL/dx(T) = 2(x(T)-y*) initialises adjoint
+a0  = np.array([2.0 * (xT - y_star)])
+f_adj = lambda a, t: -np.array([theta]) * a   # adjoint ODE
+ts_b, as_b = rk4(f_adj, a0, 0.0, T_ode, h_ode)
+# dL/dθ = -∫_0^T a(T-t) · x(T-t) dt  (numerically integrate)
+# We need a(t) and x(t) aligned in FORWARD time; flip adjoint trajectory
+a_fwd = as_b[:, 0][::-1]          # a(t) in forward time
+x_fwd = xs_f[:, 0]                # x(t) in forward time
+n_pts = min(len(a_fwd), len(x_fwd))
+dL_dtheta = -np.trapezoid(a_fwd[:n_pts] * x_fwd[:n_pts], ts_f[:n_pts])
+
+# Analytic gradient for verification: x(T)=e^{θT}, dL/dθ = 2(e^{θT}-y*)·T·e^{θT}
+dL_dtheta_analytic = 2*(np.exp(theta*T_ode) - y_star) * T_ode * np.exp(theta*T_ode)
+
+print(f"  θ = {theta},  x(T) = {xT:.6f},  target = {y_star},  loss = {loss:.6f}")
+print(f"  Adjoint dL/dθ  = {dL_dtheta:.6f}")
+print(f"  Analytic dL/dθ = {dL_dtheta_analytic:.6f}")
+print(f"  Error          = {abs(dL_dtheta - dL_dtheta_analytic):.2e}")
+print()
+
+# Gradient descent on θ to fit target
+print("  Fitting θ via gradient descent (10 steps, lr=0.5):")
+theta_fit = -0.5
+lr_node = 0.5
+for step in range(10):
+    f_fit = lambda x, t: np.array([theta_fit]) * x
+    _, xs_fit = rk4(f_fit, np.array([1.0]), 0.0, T_ode, h_ode)
+    xT_fit = xs_fit[-1, 0]
+    loss_fit = (xT_fit - y_star)**2
+    # analytic grad
+    grad_fit = 2*(xT_fit - y_star) * T_ode * xT_fit
+    theta_fit -= lr_node * grad_fit
+    if step % 2 == 0 or step == 9:
+        print(f"  step {step+1:2d}: θ={theta_fit:.6f}, x(T)={xT_fit:.6f}, loss={loss_fit:.6e}")
+print()
+
+# ── Gradient flow vs discrete GD ──────────────────────────────────────────
+# f(x) = x² + 2x + 1 = (x+1)²,  minimum at x* = -1
+print("  GRADIENT FLOW vs DISCRETE GRADIENT DESCENT")
+print("  f(x) = (x+1)²,  ∇f = 2(x+1),  min at x*=-1")
+print()
+
+f_opt  = lambda x: (x + 1)**2
+gf_opt = lambda x: 2*(x + 1)
+
+# Continuous gradient flow: dx/dt = -∇f(x)
+f_gflow = lambda x, t: -gf_opt(x)
+ts_gf, xs_gf = rk4(f_gflow, np.array([3.0]), 0.0, 5.0, 0.01)
+
+# Discrete GD with various step sizes
+x0_gd = 3.0
+etas   = [0.1, 0.5, 0.9, 1.1]
+n_gd   = 50
+hist_gd = {}
+for eta in etas:
+    x = x0_gd
+    h = [x]
+    for _ in range(n_gd):
+        x = x - eta * gf_opt(x)
+        h.append(x)
+    hist_gd[eta] = np.array(h)
+
+print(f"  {'η':>6} | {'Final x':>10} | {'Final f(x)':>12} | Status")
+print(f"  {'─'*50}")
+for eta in etas:
+    xf = hist_gd[eta][-1]
+    ff = f_opt(xf)
+    status = "converged" if abs(xf - (-1)) < 0.01 else ("diverged" if abs(xf) > 100 else "oscillating")
+    print(f"  {eta:>6.2f} | {xf:>10.6f} | {ff:>12.6e} | {status}")
+print()
+
+# ── Nesterov ODE: ẍ + (3/t)ẋ = -∇f(x)  (converted to 1st-order system) ───
+print("  NESTEROV ODE: ẍ + (3/t)ẋ = −∇f(x)  (continuous Nesterov AGD)")
+print()
+
+# State: (x, v) where v = ẋ
+# dx/dt = v
+# dv/dt = -∇f(x) - (3/t)v    (t > 0)
+def f_nesterov(state, t):
+    x, v = state
+    damp = 3.0 / max(t, 0.01)   # avoid division by zero
+    dxdt = v
+    dvdt = -gf_opt(x) - damp * v
+    return np.array([dxdt, dvdt])
+
+ts_nes, xs_nes = rk4(f_nesterov, np.array([3.0, 0.0]), 0.01, 6.0, 0.01)
+print(f"  Nesterov ODE final x: {xs_nes[-1,0]:.6f}  (target: -1.0)")
+print(f"  f(x_final): {f_opt(xs_nes[-1,0]):.2e}")
+print()
+
+# ── Langevin dynamics ──────────────────────────────────────────────────────
+print("  LANGEVIN DYNAMICS: dx = -∇f(x) dt + √(2T) dW")
+print()
+temps = [0.0, 0.1, 0.5]
+n_lang = 5000
+h_lang = 0.01
+lang_trajs = {}
+for temp in temps:
+    x = np.array([3.0])
+    traj = [x[0]]
+    for _ in range(n_lang):
+        noise = np.sqrt(2*temp*h_lang) * rng.standard_normal(1)
+        x = x - h_lang * gf_opt(x) + noise
+        traj.append(x[0])
+    lang_trajs[temp] = np.array(traj)
+    print(f"  T={temp:.1f}: mean x = {lang_trajs[temp][2000:].mean():.4f}, "
+          f"std = {lang_trajs[temp][2000:].std():.4f}   "
+          f"(theory: mean=-1, std=√T={np.sqrt(temp):.4f})")
+print()
+
+# ── Plots ──────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+fig.suptitle("Neural ODEs & Continuous-Time Optimisation", fontsize=12, fontweight="bold")
+
+# Plot 1: ODE solver accuracy (Euler vs RK4)
+hs = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
+err_euler, err_rk4 = [], []
+for h in hs:
+    _, xe = euler(f_decay, np.array([1.0]), 0.0, T_d, h)
+    _, xr = rk4(f_decay, np.array([1.0]), 0.0, T_d, h)
+    err_euler.append(abs(xe[-1,0] - exact_d))
+    err_rk4.append(abs(xr[-1,0] - exact_d))
+axes[0].loglog(hs, err_euler, "o-", color="steelblue", lw=2, label="Euler O(h)")
+axes[0].loglog(hs, err_rk4,   "s-", color="tomato",   lw=2, label="RK4 O(h⁴)")
+axes[0].loglog(hs, [h**1 * err_euler[0]/hs[0]**1 for h in hs], "k--", lw=1, alpha=0.4)
+axes[0].loglog(hs, [h**4 * err_rk4[0]/hs[0]**4 for h in hs],   "k:",  lw=1, alpha=0.4)
+axes[0].set_xlabel("Step size h"); axes[0].set_ylabel("Error at T=2")
+axes[0].set_title("ODE Solver Accuracy\\nEuler vs RK4")
+axes[0].legend(fontsize=9); axes[0].grid(alpha=0.3)
+
+# Plot 2: Gradient flow vs discrete GD
+axes[1].plot(ts_gf, xs_gf[:,0], "k-", lw=2.5, label="Gradient flow (ODE)", zorder=5)
+colors_gd = ["steelblue", "seagreen", "orange", "tomato"]
+for (eta, hist), col in zip(hist_gd.items(), colors_gd):
+    axes[1].plot(np.arange(len(hist))*eta, hist, "o-", markersize=3,
+                 lw=1.5, color=col, alpha=0.8, label=f"GD η={eta}")
+axes[1].axhline(-1, color="gray", linestyle=":", lw=1.2, label="x*=−1")
+axes[1].set_xlabel("Time / η·steps"); axes[1].set_ylabel("x(t)")
+axes[1].set_title("Gradient Flow vs Discrete GD\\nη=1.1 diverges (step > 1/L=0.5)")
+axes[1].legend(fontsize=8); axes[1].grid(alpha=0.3)
+axes[1].set_ylim(-3, 4)
+
+# Plot 3: Nesterov ODE trajectory
+axes[2].plot(ts_nes, xs_nes[:,0], color="purple", lw=2, label="Position x(t)")
+axes[2].plot(ts_nes, xs_nes[:,1], color="coral",  lw=1.5, alpha=0.7, label="Velocity ẋ(t)")
+axes[2].axhline(-1, color="gray", linestyle=":", lw=1.2, label="x*=−1")
+axes[2].set_xlabel("t"); axes[2].set_ylabel("x, ẋ")
+axes[2].set_title("Nesterov ODE: ẍ + (3/t)ẋ = −∇f\\nDamping → 0 enables acceleration")
+axes[2].legend(fontsize=9); axes[2].grid(alpha=0.3)
+
+# Plot 4: Langevin dynamics
+colors_lang = ["steelblue", "seagreen", "tomato"]
+for (temp, traj), col in zip(lang_trajs.items(), colors_lang):
+    axes[3].plot(traj[:500], color=col, lw=1, alpha=0.8, label=f"T={temp}")
+axes[3].axhline(-1, color="k", linestyle="--", lw=1.2, label="x*=−1")
+axes[3].set_xlabel("Step"); axes[3].set_ylabel("x")
+axes[3].set_title("Langevin Dynamics\\nHigher T → wider stationary distribution")
+axes[3].legend(fontsize=9); axes[3].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "neural_odes_continuous_optim.png", dpi=120)
+print("  Plot saved → neural_odes_continuous_optim.png")
+print()
+print("  KEY TAKEAWAYS:")
+print("  RK4 is 4th-order accurate — error drops 10000× when h halves.")
+print("  Euler step = ResNet residual block: one forward-Euler ODE step.")
+print("  Adjoint method gives exact gradients through ODE solver in O(1) memory.")
+print("  Gradient flow is the continuous limit of GD; η > 2/L causes divergence.")
+print("  Nesterov ODE: vanishing damping (3/t) is why acceleration works.")
+print("  Langevin: T controls exploration vs exploitation tradeoff.")
 ''',
     },
 
