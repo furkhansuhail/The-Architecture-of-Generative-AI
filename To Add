@@ -60,3 +60,66 @@ Cisco Job:
 
 
 YAML
+
+
+Loss iun the middle problem
+
+
+
+# -----------------------------------------------------------------------------------------
+Q) So basically  TensorRT-LLM is used for fine tuning and micro batching
+
+
+Not quite! There's a common misconception here worth clearing up.
+TensorRT-LLM is for Inference, not Fine-tuning
+Task            What it means                                   TensorRT-LLM?
+Pre-training    Training a model from scratch                   ❌ No
+Fine-tuning     Further training on custom data                 ❌ No
+Inference       Running a trained model to generate outputs     ✅ Yes
+
+
+For fine-tuning, you'd use tools like HuggingFace Transformers, PEFT/LoRA, Unsloth, or NVIDIA NeMo
+instead.
+
+On "micro batching"
+TensorRT-LLM does use a batching technique, but it's called in-flight batching (also called
+continuous batching), not micro batching.
+
+These are different things:
+
+Micro batching — splitting a batch into smaller chunks during training to fit in memory
+In-flight / continuous batching — dynamically adding new requests to an inference batch without waiting for others to finish, maximizing GPU utilization
+
+
+So what is TensorRT-LLM actually for?
+Think of the workflow like this:
+
+    Fine-tune your model (HuggingFace, NeMo, etc.)
+                ↓
+    Optimize it for fast serving (TensorRT-LLM)
+                ↓
+    Deploy it to production (Triton Inference Server)
+
+TensorRT-LLM sits at the "make inference as fast as possible" step — after training/fine-tuning
+is already done.
+
+In short: it's a serving/inference optimization tool, not a training or fine-tuning framework.
+
+
+# ------------------------------------------------------------------------------
+MLIR — Multi-Level Intermediate Representation
+
+MLIR is a compiler infrastructure framework originally developed by Google and now part of the
+LLVM project. It provides a flexible, extensible system for building compilers, especially for
+ML workloads, hardware backends, and domain-specific languages.
+
+
+# ---------------------------------------------------------------------------------
+ Apache Spark, Hadoop (MapReduce), or Apache Flink.
+
+# --------------------------------------------------------------------------------
+AI Performance
+
+# --------------------------------------------------------------------------------
+MLflow
+

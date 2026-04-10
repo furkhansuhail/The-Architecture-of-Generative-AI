@@ -1,3 +1,4 @@
+
 """
 The Architecture of Machine Learning
 ======================================
@@ -31,10 +32,10 @@ import sys as _sys, io as _io, base64 as _b64
 import matplotlib as _mpl
 _mpl.use('Agg')
 import matplotlib.pyplot as _plt
- 
+
 _orig_savefig = _plt.savefig
 _orig_show    = _plt.show
- 
+
 def _intercept_savefig(fname, *args, **kwargs):
     buf = _io.BytesIO()
     kwargs.pop('format', None)
@@ -42,7 +43,7 @@ def _intercept_savefig(fname, *args, **kwargs):
     buf.seek(0)
     enc = _b64.b64encode(buf.read()).decode('ascii')
     print(f"###STREAMLIT_FIG###{enc}###END_FIG###", flush=True)
- 
+
 def _intercept_show(*args, **kwargs):
     for _fn in _plt.get_fignums():
         buf = _io.BytesIO()
@@ -51,7 +52,7 @@ def _intercept_show(*args, **kwargs):
         enc = _b64.b64encode(buf.read()).decode('ascii')
         print(f"###STREAMLIT_FIG###{enc}###END_FIG###", flush=True)
     _plt.close('all')
- 
+
 _plt.savefig = _intercept_savefig
 _plt.show    = _intercept_show
 '''
@@ -98,6 +99,8 @@ PARADIGMS ={
     "17_Compiler Runtime"           :                           "Compilers_Runtimes",
     "18_GPU Kernels"                :                                  "GPU_Kernels",
     "19_Training LLM"               :                                 "LLM_Training",
+    "20_LLM_Architecture"           :                             "LLM_Architecture",
+
 }
 
 
@@ -585,30 +588,49 @@ elif st.session_state.main_view == "ai_assistant":
 
 
 
-
-
-# """
-# The Architecture of Machine Learning
-# ======================================
-# A multi-paradigm Streamlit reference hub — theory, visual breakdowns,
-# and runnable implementations across all major ML paradigms.
-#
-# Paradigms:
-#   - Generative AI        → topics in generative_ai/topics/
-#   - Supervised Learning  → topics in supervised/topics/
-#   - Unsupervised Learning→ topics in unsupervised/topics/
-#   - Reinforcement Learning→ topics in reinforcement_learning/topics/
-#
-# Each paradigm shares the same 3-panel structure:
-#   Topics (Theory + Visual + Step-by-Step) | Code Runner | AI Assistant
-# """
-#
 # import os
 # import sys
 # import subprocess
 # import tempfile
+# import re
+# import base64
 # from pathlib import Path
 # from typing import Dict, Optional
+#
+# # ── Matplotlib interceptor ─────────────────────────────────────────────────────
+# # Injected at the top of every subprocess execution so plt.savefig/plt.show
+# # serialise figures to stdout (base64) instead of writing to disk.
+# _MATPLOTLIB_INTERCEPTOR = '''
+# import sys as _sys, io as _io, base64 as _b64
+# import matplotlib as _mpl
+# _mpl.use('Agg')
+# import matplotlib.pyplot as _plt
+#
+# _orig_savefig = _plt.savefig
+# _orig_show    = _plt.show
+#
+# def _intercept_savefig(fname, *args, **kwargs):
+#     buf = _io.BytesIO()
+#     kwargs.pop('format', None)
+#     _orig_savefig(buf, *args, format='png', **kwargs)
+#     buf.seek(0)
+#     enc = _b64.b64encode(buf.read()).decode('ascii')
+#     print(f"###STREAMLIT_FIG###{enc}###END_FIG###", flush=True)
+#
+# def _intercept_show(*args, **kwargs):
+#     for _fn in _plt.get_fignums():
+#         buf = _io.BytesIO()
+#         _plt.figure(_fn).savefig(buf, format='png', bbox_inches='tight')
+#         buf.seek(0)
+#         enc = _b64.b64encode(buf.read()).decode('ascii')
+#         print(f"###STREAMLIT_FIG###{enc}###END_FIG###", flush=True)
+#     _plt.close('all')
+#
+# _plt.savefig = _intercept_savefig
+# _plt.show    = _intercept_show
+# '''
+#
+# _FIG_PATTERN = re.compile(r'###STREAMLIT_FIG###([A-Za-z0-9+/=]+)###END_FIG###')
 #
 # import streamlit as st
 # import streamlit.components.v1 as st_components
@@ -629,9 +651,34 @@ elif st.session_state.main_view == "ai_assistant":
 #
 # # ── Paradigm registry ──────────────────────────────────────────────────────────
 # PARADIGMS = {
+# # {
+# #     "00_Automation": "Automation",
+# #     "01_Basic_ML_Libraries": "00_Basic_ML_Libraries",
+# #     "02_Core Math": "01_ML_Foundation_Math_Core",
+# #     "03_Probability_&_Information": "02_ML_Foundation_Probability_&_Information",
+# #     "04_Data": "03_ML_Foundation_Data",
+# #     "05_Model Behaviour": "04_ML_Foundation_Model_Behaviour",
+# #     "06_Learning & Optimization": "05_ML_Foundation_Learning_&_Optimization",
+# #     "07_Evaluation & Generalization": "06_ML_Foundation_Evaluation_&_Generalization",
+# #     "08_Advanced Foundations": "07_ML_Foundation_Advanced_Foundations",
+# #     "09_Supervised Learning Core": "Supervised_Learning",
+# #     "10_Unsupervised Learning Core": "Unsupervised_Learning",
+# #     "11_Deep Learning": "Deep_Learning",
+# #     "12_Training Core": "Training_Core",
+# #     "13_Reinforcement Learning": "Reinforcement_learning",
+# #     "14_Generative AI": "Generative_AI",
+# #     "15_Frameworks": "Frameworks",
+# #     "16_Interpretability": "Interpretability",
+# #     "17_Compiler Runtime": "Compilers_Runtimes",
+# #     "18_GPU Kernels": "GPU_Kernels",
+# #     "19_Training LLM": "LLM_Training",
+# #     "20_LLM_Architecture": "LLM_Architecture",
+# # }
+#
+#
+#
 #     "Automation"                                 :                                   "Automation",
 #     "ML Foundation - Core Math"                  :                   "00_ML_Foundation_Math_Core",
-#     "ML Foundation - Probability_&_Information"  :  "01__ML_Foundation_Probability_&_Information",
 #     "ML Foundation - Data"                       :                       "02__ML_Foundation_Data",
 #     "ML Foundation - Model Behaviour"            :            "03__ML_Foundation_Model Behaviour",
 #     "ML Foundation - Learning & Optimization"    :    "04__ML_Foundation_Learning & Optimization",
@@ -663,7 +710,7 @@ elif st.session_state.main_view == "ai_assistant":
 #     the next startup → KeyError: 'deep_learning.topics'.
 #     """
 #     base_dir = Path(__file__).parent
-#     pkg_dir  = base_dir / paradigm_key
+#     pkg_dir = base_dir / paradigm_key
 #     if not pkg_dir.exists():
 #         return {}
 #
@@ -776,12 +823,11 @@ elif st.session_state.main_view == "ai_assistant":
 #
 #
 # def run_code_subprocess(code: str, timeout: int = 30) -> dict:
-#     # Always prepend the UTF-8 coding declaration so the subprocess Python
-#     # process reads the temp file as UTF-8 on Windows (which otherwise
-#     # defaults to cp1252, breaking any Unicode characters in the code).
-#     utf8_code = "# -*- coding: utf-8 -*-\n" + code
+#     # Prepend UTF-8 declaration + matplotlib interceptor so figures are
+#     # captured in memory instead of saved to disk.
+#     full_code = "# -*- coding: utf-8 -*-\n" + _MATPLOTLIB_INTERCEPTOR + "\n" + code
 #     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False, encoding="utf-8") as f:
-#         f.write(utf8_code)
+#         f.write(full_code)
 #         tmp_path = f.name
 #     try:
 #         result = subprocess.run(
@@ -789,11 +835,19 @@ elif st.session_state.main_view == "ai_assistant":
 #             capture_output=True, text=True, timeout=timeout,
 #             encoding="utf-8"
 #         )
-#         return {"success": result.returncode == 0,
-#                 "stdout": result.stdout, "stderr": result.stderr}
+#         # Strip figure tokens from stdout and decode each figure
+#         raw_stdout = result.stdout
+#         figures_b64 = _FIG_PATTERN.findall(raw_stdout)
+#         clean_stdout = _FIG_PATTERN.sub("", raw_stdout).strip()
+#         return {
+#             "success": result.returncode == 0,
+#             "stdout": clean_stdout,
+#             "stderr": result.stderr,
+#             "figures": figures_b64,  # list of base64-encoded PNGs
+#         }
 #     except subprocess.TimeoutExpired:
 #         return {"success": False, "stdout": "",
-#                 "stderr": f"⏱️ Execution timed out ({timeout}s)"}
+#                 "stderr": f"⏱️ Execution timed out ({timeout}s)", "figures": []}
 #     finally:
 #         os.unlink(tmp_path)
 #
@@ -824,6 +878,12 @@ elif st.session_state.main_view == "ai_assistant":
 #                 with st.container(border=True):
 #                     st.code(res["stderr"], language="text")
 #
+#             # Display any matplotlib figures captured from the subprocess
+#             if res.get("figures"):
+#                 st.markdown("#### 📊 Figures")
+#                 for fig_b64 in res["figures"]:
+#                     st.image(base64.b64decode(fig_b64), width='stretch')
+#
 #
 # # ── Session state ─────────────────────────────────────────────────────────────
 # if "paradigm" not in st.session_state:
@@ -836,11 +896,11 @@ elif st.session_state.main_view == "ai_assistant":
 #     st.session_state.chat_history = []
 #
 # # Load content for the active paradigm
-# active_pkg   = PARADIGMS[st.session_state.paradigm]
-# CONTENT      = load_topics_for(active_pkg)
-# TOPIC_LIST   = list(CONTENT.keys())
+# active_pkg = PARADIGMS[st.session_state.paradigm]
+# CONTENT = load_topics_for(active_pkg)
+# TOPIC_LIST = list(CONTENT.keys())
 # IMPLEMENTATIONS = load_implementations_for(active_pkg)
-# IMPL_KEYS    = list(IMPLEMENTATIONS.keys())
+# IMPL_KEYS = list(IMPLEMENTATIONS.keys())
 #
 # # Dynamic font-size CSS
 # _fs = st.session_state.font_size
@@ -850,14 +910,13 @@ elif st.session_state.main_view == "ai_assistant":
 #     .stMarkdown td, .stMarkdown th {{
 #         font-size: {_fs}px !important; line-height: 1.7 !important;
 #     }}
-#     .stMarkdown h1 {{ font-size: {_fs*2.0:.0f}px !important; }}
-#     .stMarkdown h2 {{ font-size: {_fs*1.6:.0f}px !important; }}
-#     .stMarkdown h3 {{ font-size: {_fs*1.3:.0f}px !important; }}
-#     .stMarkdown h4 {{ font-size: {_fs*1.1:.0f}px !important; }}
-#     .stCodeBlock code {{ font-size: {max(_fs-2,12)}px !important; }}
+#     .stMarkdown h1 {{ font-size: {_fs * 2.0:.0f}px !important; }}
+#     .stMarkdown h2 {{ font-size: {_fs * 1.6:.0f}px !important; }}
+#     .stMarkdown h3 {{ font-size: {_fs * 1.3:.0f}px !important; }}
+#     .stMarkdown h4 {{ font-size: {_fs * 1.1:.0f}px !important; }}
+#     .stCodeBlock code {{ font-size: {max(_fs - 2, 12)}px !important; }}
 # </style>
 # """, unsafe_allow_html=True)
-#
 #
 # # ══════════════════════════════════════════════════════════════════════════════
 # # SIDEBAR
@@ -877,8 +936,8 @@ elif st.session_state.main_view == "ai_assistant":
 # )
 #
 # if selected_paradigm != st.session_state.paradigm:
-#     st.session_state.paradigm   = selected_paradigm
-#     st.session_state.main_view  = "topics"
+#     st.session_state.paradigm = selected_paradigm
+#     st.session_state.main_view = "topics"
 #     st.session_state.chat_history = []
 #     st.cache_resource.clear()
 #     st.rerun()
@@ -928,12 +987,12 @@ elif st.session_state.main_view == "ai_assistant":
 #     if IMPLEMENTATIONS:
 #         impl_search = st.sidebar.text_input("🔍 Search", placeholder="Filter...",
 #                                             key=f"impl_search_{active_pkg}")
-#         all_levels  = sorted(set(v["level"] for v in IMPLEMENTATIONS.values()))
+#         all_levels = sorted(set(v["level"] for v in IMPLEMENTATIONS.values()))
 #         level_icons = {"Beginner": "🟢", "Intermediate": "🟡", "Advanced": "🔴", "Unknown": "⚪"}
 #
 #         selected_levels = st.sidebar.multiselect(
 #             "Level", options=all_levels,
-#             format_func=lambda x: f"{level_icons.get(x,'⚪')} {x}",
+#             format_func=lambda x: f"{level_icons.get(x, '⚪')} {x}",
 #             key=f"level_filter_{active_pkg}")
 #
 #         filtered_keys = [
@@ -941,7 +1000,7 @@ elif st.session_state.main_view == "ai_assistant":
 #             if (not impl_search or
 #                 impl_search.lower() in IMPLEMENTATIONS[k]["display_name"].lower() or
 #                 any(impl_search.lower() in c.lower() for c in IMPLEMENTATIONS[k].get("concepts", [])))
-#             and (not selected_levels or IMPLEMENTATIONS[k].get("level") in selected_levels)
+#                and (not selected_levels or IMPLEMENTATIONS[k].get("level") in selected_levels)
 #         ]
 #
 #         st.sidebar.caption(f"Showing {len(filtered_keys)} of {len(IMPL_KEYS)}")
@@ -956,12 +1015,11 @@ elif st.session_state.main_view == "ai_assistant":
 #     else:
 #         st.sidebar.info("No implementations yet. Add .py files to Implementation/")
 #
-#
 # # ══════════════════════════════════════════════════════════════════════════════
 # # MAIN AREA — TOPICS
 # # ══════════════════════════════════════════════════════════════════════════════
 # if st.session_state.main_view == "topics":
-#     topic_key    = f"topic_radio_{active_pkg}"
+#     topic_key = f"topic_radio_{active_pkg}"
 #     selected_topic = st.session_state.get(topic_key, TOPIC_LIST[0] if TOPIC_LIST else None)
 #
 #     if not selected_topic or not CONTENT:
@@ -971,16 +1029,52 @@ elif st.session_state.main_view == "ai_assistant":
 #     topic_data = CONTENT[selected_topic]
 #
 #     st.markdown(f'<span class="paradigm-badge">{selected_paradigm}</span>', unsafe_allow_html=True)
-#     st.markdown(f"# {topic_data.get('icon','📖')} {selected_topic}")
+#     st.markdown(f"# {topic_data.get('icon', '📖')} {selected_topic}")
 #     st.caption(topic_data.get("subtitle", ""))
 #     st.markdown("---")
 #
 #     tab1, tab2, tab3, tab4 = st.tabs(["📖 Theory", "🎨 Visual Breakdown", "🔬 Step-by-Step", "📊 Complexity"])
 #
 #     with tab1:
-#         with st.container(border=True):
-#             st.markdown(topic_data.get("theory", "_Theory not yet added._"),
-#                         unsafe_allow_html=True)
+#         theory_sections = topic_data.get("theory_sections")
+#         if theory_sections and isinstance(theory_sections, dict):
+#             # ── Sectioned theory (e.g. modules that use THEORY_SECTIONS dict) ──
+#             # Render a search bar + one expander per section so readers can
+#             # jump straight to the topic they want instead of scrolling a wall
+#             # of text.
+#             section_search = st.text_input(
+#                 "🔍 Search sections",
+#                 placeholder="Filter by topic name…",
+#                 key=f"theory_search_{selected_topic}",
+#             )
+#             visible = {
+#                 slug: content
+#                 for slug, content in theory_sections.items()
+#                 if not section_search
+#                    or section_search.lower() in slug.replace("_", " ").lower()
+#                    or section_search.lower() in content.lower()
+#             }
+#             st.caption(f"{len(visible)} of {len(theory_sections)} sections shown")
+#             st.markdown("---")
+#             if visible:
+#                 for slug, content in visible.items():
+#                     # Turn the slug into a human-readable label:
+#                     # "prompt_processing" → "01 · Prompt Processing"
+#                     # The section headings already contain the number prefix
+#                     # so we just clean up the slug as a fallback label.
+#                     first_line = content.strip().splitlines()[0] if content.strip() else ""
+#                     # Use the first markdown heading as the expander title if available
+#                     heading_match = re.match(r"^#{1,4}\s+(.*)", first_line)
+#                     label = heading_match.group(1) if heading_match else slug.replace("_", " ").title()
+#                     with st.expander(label, expanded=False):
+#                         st.markdown(content, unsafe_allow_html=True)
+#             else:
+#                 st.info("No sections match your search.")
+#         else:
+#             # ── Legacy flat-string theory (all other existing modules) ──
+#             with st.container(border=True):
+#                 st.markdown(topic_data.get("theory", "_Theory not yet added._"),
+#                             unsafe_allow_html=True)
 #
 #     with tab2:
 #         visual_tabs = topic_data.get("visual_tabs", [])
@@ -988,7 +1082,7 @@ elif st.session_state.main_view == "ai_assistant":
 #             # Multiple visuals: render each in its own native Streamlit sub-tab
 #             # so every React app gets an independent, properly-initialised iframe.
 #             sub_labels = [vt["label"] for vt in visual_tabs]
-#             sub_tabs   = st.tabs(sub_labels)
+#             sub_tabs = st.tabs(sub_labels)
 #             for sub_tab, vt in zip(sub_tabs, visual_tabs):
 #                 with sub_tab:
 #                     st_components.html(vt["html"], height=vt.get("height", 700), scrolling=True)
@@ -1030,7 +1124,7 @@ elif st.session_state.main_view == "ai_assistant":
 # # MAIN AREA — IMPLEMENTATION
 # # ══════════════════════════════════════════════════════════════════════════════
 # elif st.session_state.main_view == "implementation":
-#     impl_key     = f"impl_radio_{active_pkg}"
+#     impl_key = f"impl_radio_{active_pkg}"
 #     selected_impl = st.session_state.get(impl_key)
 #
 #     if not selected_impl or not IMPLEMENTATIONS:
@@ -1043,8 +1137,8 @@ elif st.session_state.main_view == "ai_assistant":
 #     st.markdown(f'<span class="paradigm-badge">{selected_paradigm}</span>', unsafe_allow_html=True)
 #     st.markdown(f"## ⚙️ {impl['display_name']}")
 #     st.caption(
-#         f"{level_colors.get(impl['level'],'⚪')} **{impl['level']}** &nbsp;|&nbsp; "
-#         f"Module: `{impl.get('module','General')}`"
+#         f"{level_colors.get(impl['level'], '⚪')} **{impl['level']}** &nbsp;|&nbsp; "
+#         f"Module: `{impl.get('module', 'General')}`"
 #     )
 #
 #     if impl.get("concepts"):
@@ -1097,4 +1191,5 @@ elif st.session_state.main_view == "ai_assistant":
 #         })
 #         st.rerun()
 #
-#
+
+
