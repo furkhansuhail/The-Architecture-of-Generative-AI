@@ -123,3 +123,26 @@ AI Performance
 # --------------------------------------------------------------------------------
 MLflow
 
+# --------------------------------------------------------------------------------
+
+Adapt standard machine learning methods to best exploit modern parallel environments (e.g. distributed clusters, multicore SMP, and GPU)
+
+
+
+
+Design, build, and scale full-stack data collection pipelines for post-training (SFT, RLHF) across text, vision, and action modalities
+
+
+RAGAS — Retrieval Augmented Generation Assessment
+
+
+RLHF — Reinforcement Learning from Human Feedback
+
+Experience working with SOTA Reinforcement Learning codebases and familiarity with one or more machine learning frameworks (e.g. pytorch, VERL, …)
+
+
+
+Apache Spark jobs and Databricks
+
+
+Hardware Implementation: Hands-on experience implementing complex AI workloads on CPU, GPU, and/or custom AI accelerator architectures.
